@@ -281,11 +281,12 @@ export default function AdminPage({ currentUser }) {
                             cursor: u.username === 'admin' ? 'not-allowed' : 'pointer'
                           }}
                         >
-                          <option value="Admin">Admin</option>
-                          <option value="Dispatcher">Dispatcher (Normal)</option>
-                          <option value="Driver">Driver (Normal)</option>
-                          <option value="Fleet Manager">Fleet Manager (Normal)</option>
-                          <option value="Staff">Operations Staff (Normal)</option>
+                          <option value="Admin">Admin (Full Control)</option>
+                          <option value="Owner">Owner (Business Member)</option>
+                          <option value="Co-Owner">Co-Owner (Partner)</option>
+                          <option value="Fleet Manager">Fleet Manager</option>
+                          <option value="Dispatcher">Dispatcher</option>
+                          <option value="Driver">Driver</option>
                         </select>
                       </div>
                     )}

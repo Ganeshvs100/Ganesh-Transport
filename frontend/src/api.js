@@ -58,6 +58,17 @@ export async function createVehicle(vehicleData) {
   }
 }
 
+export async function deleteVehicle(vehicleId) {
+  try {
+    const res = await fetch(`${API_BASE}/vehicles/${vehicleId}`, {
+      method: 'DELETE'
+    });
+    return await res.json();
+  } catch (err) {
+    return { success: false, message: err.message };
+  }
+}
+
 export async function fetchTrips(search = '', status = 'All') {
   try {
     const res = await fetch(`${API_BASE}/trips?search=${encodeURIComponent(search)}&status=${encodeURIComponent(status)}`);
@@ -82,6 +93,17 @@ export async function createTrip(tripData) {
   }
 }
 
+export async function deleteTrip(tripId) {
+  try {
+    const res = await fetch(`${API_BASE}/trips/${tripId}`, {
+      method: 'DELETE'
+    });
+    return await res.json();
+  } catch (err) {
+    return { success: false, message: err.message };
+  }
+}
+
 export async function fetchTransactions(search = '', type = 'All') {
   try {
     const res = await fetch(`${API_BASE}/transactions?search=${encodeURIComponent(search)}&type=${encodeURIComponent(type)}`);
@@ -99,6 +121,17 @@ export async function createTransaction(txData) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(txData)
+    });
+    return await res.json();
+  } catch (err) {
+    return { success: false, message: err.message };
+  }
+}
+
+export async function deleteTransaction(txId) {
+  try {
+    const res = await fetch(`${API_BASE}/transactions/${txId}`, {
+      method: 'DELETE'
     });
     return await res.json();
   } catch (err) {

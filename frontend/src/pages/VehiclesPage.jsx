@@ -9,53 +9,14 @@ import {
   Plus,
   Trash2
 } from 'lucide-react';
-import { fetchVehicles } from '../api';
+import { fetchVehicles, deleteVehicle } from '../api';
 
 export default function VehiclesPage({ onOpenAddModal }) {
-  const [vehicles, setVehicles] = useState([
-    {
-      id: 'v1',
-      registration: 'MH-12-PQ-8842',
-      model: 'Tata Prima - 10 Wheeler Hauler',
-      status: 'Overdue',
-      insuranceFormatted: '24 Oct 2023',
-      fitnessFormatted: '12 Dec 2024',
-      location: 'Navi Mumbai',
-      isInsuranceAlert: true
-    },
-    {
-      id: 'v2',
-      registration: 'KA-01-FR-1120',
-      model: 'Eicher Pro 3015 - Cargo Van',
-      status: 'Active',
-      insuranceFormatted: '15 Mar 2025',
-      fitnessFormatted: '02 Feb 2025',
-      location: 'Bengaluru Hub'
-    },
-    {
-      id: 'v3',
-      registration: 'HR-55-XY-0092',
-      model: 'Ashok Leyland - Tipper',
-      status: 'Maintenance',
-      insuranceFormatted: '18 Jan 2025',
-      fitnessFormatted: '02 Nov 2024',
-      location: 'Workshop B',
-      isFitnessAlert: true
-    },
-    {
-      id: 'v4',
-      registration: 'UP-14-DT-7763',
-      model: 'Mahindra Blazo - Haulage',
-      status: 'Active',
-      insuranceFormatted: '14 Nov 2024',
-      fitnessFormatted: '05 Mar 2025',
-      location: 'Delhi Gateway'
-    }
-  ]);
-
+  const [vehicles, setVehicles] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [overview, setOverview] = useState({
-    totalFleet: 124,
-    criticalExpiry: 8
+    totalFleet: 0,
+    criticalExpiry: 0
   });
 
   const [search, setSearch] = useState('');
@@ -63,20 +24,28 @@ export default function VehiclesPage({ onOpenAddModal }) {
 
   useEffect(() => {
     async function loadData() {
+      setLoading(true);
       const res = await fetchVehicles(search, activeFilter);
       if (res && res.vehicles) {
         setVehicles(res.vehicles);
         if (res.overview) setOverview(res.overview);
       }
+      setLoading(false);
     }
     loadData();
   }, [search, activeFilter]);
 
   const filterTabs = ['All', 'Active', 'Maintenance', 'Overdue'];
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (confirm('Are you sure you want to remove this vehicle?')) {
+      const prev = vehicles;
       setVehicles(vehicles.filter((v) => v.id !== id));
+      const res = await deleteVehicle(id);
+      if (!res || !res.success) {
+        setVehicles(prev);
+        alert(res?.message || 'Failed to delete vehicle');
+      }
     }
   };
 
@@ -136,91 +105,129 @@ export default function VehiclesPage({ onOpenAddModal }) {
 
       {/* Vehicles Card List */}
       <div className="vehicles-list">
-        {vehicles.map((v) => {
-          const isOverdue = v.status.toLowerCase() === 'overdue';
-          const isMaintenance = v.status.toLowerCase() === 'maintenance';
-          const isActive = v.status.toLowerCase() === 'active';
-
-          return (
-            <div key={v.id} className="vehicle-card">
-              <div className="vehicle-card-header">
-                <h3 className="vehicle-reg">{v.registration}</h3>
-                <div className="vehicle-card-badges">
-                  {v.isLoan && (
-                    <span className="loan-badge">🏦 On Loan</span>
-                  )}
-                  <span
-                    className={`status-pill ${
-                      isOverdue
-                        ? 'pill-red'
-                        : isMaintenance
-                        ? 'pill-gray'
-                        : 'pill-blue'
-                    }`}
-                  >
-                    {v.status}
-                  </span>
-                </div>
-              </div>
-
-              <div className="vehicle-model">{v.model}</div>
-
-              <div className="vehicle-info-grid">
-                <div className="info-block">
-                  <span className="info-label">Insurance Expiry</span>
-                  <div className={`info-value ${v.isInsuranceAlert ? 'alert-text-red' : ''}`}>
-                    {v.isInsuranceAlert && <AlertTriangle size={14} className="inline-icon red" />}
-                    <span>{v.insuranceFormatted || '15 Mar 2025'}</span>
-                  </div>
-                </div>
-
-                <div className="info-block">
-                  <span className="info-label">Fitness Expiry</span>
-                  <div className={`info-value ${v.isFitnessAlert ? 'alert-text-blue' : ''}`}>
-                    {v.isFitnessAlert && <Clock size={14} className="inline-icon blue" />}
-                    <span>{v.fitnessFormatted || '02 Feb 2025'}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Loan Info Block */}
-              {v.isLoan && (
-                <div className="loan-info-block">
-                  <div className="loan-info-row">
-                    <span className="loan-info-label">🏦 Financier</span>
-                    <span className="loan-info-val">{v.loanBank || '—'}</span>
-                  </div>
-                  <div className="loan-info-row">
-                    <span className="loan-info-label">📅 Monthly EMI</span>
-                    <span className="loan-info-val loan-emi">₹{v.loanEmi ? v.loanEmi.toLocaleString('en-IN') : '—'}</span>
-                  </div>
-                  {v.loanEndDate && (
-                    <div className="loan-info-row">
-                      <span className="loan-info-label">⏳ Loan Ends</span>
-                      <span className="loan-info-val">{new Date(v.loanEndDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <div className="vehicle-card-footer">
-                <div className="vehicle-location">
-                  <MapPin size={14} className="location-icon" />
-                  <span>{v.location}</span>
-                </div>
-
-                <div className="vehicle-actions">
-                  <button className="details-link" onClick={() => alert(`Showing full telemetry & details for ${v.registration}`)}>
-                    Details <ChevronRight size={14} />
-                  </button>
-                  <button className="delete-btn" onClick={() => handleDelete(v.id)} title="Delete Vehicle">
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              </div>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
+            <p>Loading fleet vehicles...</p>
+          </div>
+        ) : vehicles.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '40px 20px', border: '1px dashed var(--border-color)', borderRadius: '16px', background: 'var(--card-bg)' }}>
+            <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'var(--gray-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px auto', color: 'var(--text-muted)' }}>
+              <Truck size={28} />
             </div>
-          );
-        })}
+            <h3 style={{ fontSize: '1rem', fontWeight: '700', margin: '0 0 6px 0', color: 'var(--text-main)' }}>
+              {search || activeFilter !== 'All' ? 'No Matching Vehicles' : 'No Vehicles in Fleet'}
+            </h3>
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: '0 0 16px 0', maxWidth: '320px', marginInline: 'auto' }}>
+              {search || activeFilter !== 'All' ? 'Try adjusting your search keywords or filter tab.' : 'Start managing your transport by adding your first truck or hauler.'}
+            </p>
+            {onOpenAddModal && (
+              <button
+                onClick={onOpenAddModal}
+                style={{
+                  background: '#2563eb',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '10px',
+                  padding: '10px 18px',
+                  fontSize: '0.85rem',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <Plus size={16} /> Add Vehicle
+              </button>
+            )}
+          </div>
+        ) : (
+          vehicles.map((v) => {
+            const isOverdue = v.status.toLowerCase() === 'overdue';
+            const isMaintenance = v.status.toLowerCase() === 'maintenance';
+            const isActive = v.status.toLowerCase() === 'active';
+
+            return (
+              <div key={v.id} className="vehicle-card">
+                <div className="vehicle-card-header">
+                  <h3 className="vehicle-reg">{v.registration}</h3>
+                  <div className="vehicle-card-badges">
+                    {v.isLoan && (
+                      <span className="loan-badge">🏦 On Loan</span>
+                    )}
+                    <span
+                      className={`status-pill ${
+                        isOverdue
+                          ? 'pill-red'
+                          : isMaintenance
+                          ? 'pill-gray'
+                          : 'pill-blue'
+                      }`}
+                    >
+                      {v.status}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="vehicle-model">{v.model}</div>
+
+                <div className="vehicle-info-grid">
+                  <div className="info-block">
+                    <span className="info-label">Insurance Expiry</span>
+                    <div className={`info-value ${v.isInsuranceAlert ? 'alert-text-red' : ''}`}>
+                      {v.isInsuranceAlert && <AlertTriangle size={14} className="inline-icon red" />}
+                      <span>{v.insuranceFormatted || '15 Mar 2025'}</span>
+                    </div>
+                  </div>
+
+                  <div className="info-block">
+                    <span className="info-label">Fitness Expiry</span>
+                    <div className={`info-value ${v.isFitnessAlert ? 'alert-text-blue' : ''}`}>
+                      {v.isFitnessAlert && <Clock size={14} className="inline-icon blue" />}
+                      <span>{v.fitnessFormatted || '02 Feb 2025'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Loan Info Block */}
+                {v.isLoan && (
+                  <div className="loan-info-block">
+                    <div className="loan-info-row">
+                      <span className="loan-info-label">🏦 Financier</span>
+                      <span className="loan-info-val">{v.loanBank || '—'}</span>
+                    </div>
+                    <div className="loan-info-row">
+                      <span className="loan-info-label">📅 Monthly EMI</span>
+                      <span className="loan-info-val loan-emi">₹{v.loanEmi ? v.loanEmi.toLocaleString('en-IN') : '—'}</span>
+                    </div>
+                    {v.loanEndDate && (
+                      <div className="loan-info-row">
+                        <span className="loan-info-label">⏳ Loan Ends</span>
+                        <span className="loan-info-val">{new Date(v.loanEndDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div className="vehicle-card-footer">
+                  <div className="vehicle-location">
+                    <MapPin size={14} className="location-icon" />
+                    <span>{v.location}</span>
+                  </div>
+
+                  <div className="vehicle-actions">
+                    <button className="details-link" onClick={() => alert(`Showing full telemetry & details for ${v.registration}`)}>
+                      Details <ChevronRight size={14} />
+                    </button>
+                    <button className="delete-btn" onClick={() => handleDelete(v.id)} title="Delete Vehicle">
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );

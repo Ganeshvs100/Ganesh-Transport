@@ -10,66 +10,15 @@ import {
   Tag,
   Calendar
 } from 'lucide-react';
-import { fetchTransactions } from '../api';
+import { fetchTransactions, deleteTransaction } from '../api';
 
 export default function ExpensesPage({ onOpenAddModal }) {
-  const [transactions, setTransactions] = useState([
-    {
-      id: 'tx-1',
-      title: 'Mumbai → Ahmedabad Freight Payment',
-      type: 'Income',
-      category: 'Freight Advance',
-      amount: 42500,
-      date: 'Today, 02:30 PM',
-      vehicle: 'MH-01-AX-4592',
-      notes: 'Received via Bank Transfer'
-    },
-    {
-      id: 'tx-2',
-      title: 'Diesel Refuel at HPCL Depot',
-      type: 'Expense',
-      category: 'Fuel',
-      amount: 14200,
-      date: 'Today, 11:15 AM',
-      vehicle: 'MH-12-PQ-8842',
-      notes: 'Full tank 150L'
-    },
-    {
-      id: 'tx-3',
-      title: 'FASTag Toll Charge - NH48',
-      type: 'Expense',
-      category: 'Toll Tax',
-      amount: 1850,
-      date: 'Today, 09:40 AM',
-      vehicle: 'MH-12-AX-4502',
-      notes: 'FASTag Auto Pay'
-    },
-    {
-      id: 'tx-4',
-      title: 'Tyre Replacement & Alignment',
-      type: 'Expense',
-      category: 'Maintenance',
-      amount: 8500,
-      date: 'Yesterday',
-      vehicle: 'HR-55-XY-0092',
-      notes: 'Workshop B repair'
-    },
-    {
-      id: 'tx-5',
-      title: 'Surat Dispatch Final Payment',
-      type: 'Income',
-      category: 'Freight Settlement',
-      amount: 65000,
-      date: 'Yesterday',
-      vehicle: 'GJ-05-CT-1211',
-      notes: 'Client invoice cleared'
-    }
-  ]);
-
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState({
-    todayIncome: 107500,
-    todayExpenses: 24550,
-    netBalance: 82950
+    todayIncome: 0,
+    todayExpenses: 0,
+    netBalance: 0
   });
 
   const [search, setSearch] = useState('');
@@ -77,20 +26,28 @@ export default function ExpensesPage({ onOpenAddModal }) {
 
   useEffect(() => {
     async function loadData() {
+      setLoading(true);
       const res = await fetchTransactions(search, activeFilter);
       if (res && res.transactions) {
         setTransactions(res.transactions);
         if (res.summary) setSummary(res.summary);
       }
+      setLoading(false);
     }
     loadData();
   }, [search, activeFilter]);
 
   const filterTabs = ['All', 'Income', 'Expense', 'Fuel', 'Toll Tax', 'Maintenance'];
 
-  const handleDelete = (id) => {
-    if (confirm('Delete this ledger entry?')) {
+  const handleDelete = async (id) => {
+    if (confirm('Are you sure you want to delete this record?')) {
+      const prev = transactions;
       setTransactions(transactions.filter((t) => t.id !== id));
+      const res = await deleteTransaction(id);
+      if (!res || !res.success) {
+        setTransactions(prev);
+        alert(res?.message || 'Failed to delete record');
+      }
     }
   };
 
@@ -174,54 +131,92 @@ export default function ExpensesPage({ onOpenAddModal }) {
 
       {/* Ledger Entry List Cards */}
       <div className="ledger-list">
-        {transactions.map((tx) => {
-          const isIncome = tx.type.toLowerCase() === 'income';
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
+            <p>Loading transactions...</p>
+          </div>
+        ) : transactions.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '40px 20px', border: '1px dashed var(--border-color)', borderRadius: '16px', background: 'var(--card-bg)' }}>
+            <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'var(--gray-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px auto', color: 'var(--text-muted)' }}>
+              <Wallet size={28} />
+            </div>
+            <h3 style={{ fontSize: '1rem', fontWeight: '700', margin: '0 0 6px 0', color: 'var(--text-main)' }}>
+              {search || activeFilter !== 'All' ? 'No Matching Records' : 'No Transactions Recorded'}
+            </h3>
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: '0 0 16px 0', maxWidth: '320px', marginInline: 'auto' }}>
+              {search || activeFilter !== 'All' ? 'Try adjusting your search keywords or filter tab.' : 'Log diesel expenses, toll tax, driver advances, or freight income.'}
+            </p>
+            {onOpenAddModal && (
+              <button
+                onClick={onOpenAddModal}
+                style={{
+                  background: '#2563eb',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '10px',
+                  padding: '10px 18px',
+                  fontSize: '0.85rem',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <Plus size={16} /> Record Transaction
+              </button>
+            )}
+          </div>
+        ) : (
+          transactions.map((tx) => {
+            const isIncome = tx.type.toLowerCase() === 'income';
 
-          return (
-            <div key={tx.id} className="ledger-item-card">
-              <div className="ledger-item-top">
-                <div className="ledger-item-title-group">
-                  <span className="ledger-item-title">{tx.title}</span>
-                  <div className="ledger-pills-row">
-                    <span
-                      className={`type-pill ${
-                        isIncome ? 'type-income' : 'type-expense'
-                      }`}
-                    >
-                      {tx.type}
-                    </span>
-                    <span className="category-pill">
-                      <Tag size={11} /> {tx.category}
-                    </span>
+            return (
+              <div key={tx.id} className="ledger-item-card">
+                <div className="ledger-item-top">
+                  <div className="ledger-item-title-group">
+                    <span className="ledger-item-title">{tx.title}</span>
+                    <div className="ledger-pills-row">
+                      <span
+                        className={`type-pill ${
+                          isIncome ? 'type-income' : 'type-expense'
+                        }`}
+                      >
+                        {tx.type}
+                      </span>
+                      <span className="category-pill">
+                        <Tag size={11} /> {tx.category}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className={`ledger-item-amount ${isIncome ? 'amount-income' : 'amount-expense'}`}>
+                    {isIncome ? '+' : '-'}₹{Number(tx.amount).toLocaleString('en-IN')}
                   </div>
                 </div>
 
-                <div className={`ledger-item-amount ${isIncome ? 'amount-income' : 'amount-expense'}`}>
-                  {isIncome ? '+' : '-'}₹{Number(tx.amount).toLocaleString('en-IN')}
+                <div className="ledger-item-bottom">
+                  <div className="ledger-item-meta">
+                    <span className="meta-date">
+                      <Calendar size={12} /> {tx.date}
+                    </span>
+                    {tx.vehicle && (
+                      <span className="meta-vehicle">• Vehicle: {tx.vehicle}</span>
+                    )}
+                  </div>
+
+                  <button
+                    className="delete-btn"
+                    onClick={() => handleDelete(tx.id)}
+                    title="Delete Entry"
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </div>
               </div>
-
-              <div className="ledger-item-bottom">
-                <div className="ledger-item-meta">
-                  <span className="meta-date">
-                    <Calendar size={12} /> {tx.date}
-                  </span>
-                  {tx.vehicle && (
-                    <span className="meta-vehicle">• Vehicle: {tx.vehicle}</span>
-                  )}
-                </div>
-
-                <button
-                  className="delete-btn"
-                  onClick={() => handleDelete(tx.id)}
-                  title="Delete Entry"
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
     </div>
   );

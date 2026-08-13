@@ -22,16 +22,14 @@ import { Plus } from 'lucide-react';
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState({
-    name: 'Ganesh Shinde',
-    email: 'admin@ganeshtransport.com',
-    role: 'Admin'
-  });
+  const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isRegisterPage, setIsRegisterPage] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const isAdmin = user?.role === 'Admin' || user?.role?.toLowerCase() === 'admin' || user?.username === 'admin' || user?.email === 'admin@ganeshtransport.com';
+
+  // Strictly allow ONLY the 'Admin' role or root 'admin' username to access Admin privileges
+  const isAdmin = user?.role?.trim()?.toLowerCase() === 'admin' || user?.username === 'admin';
 
   const {
     isInstalled,
@@ -42,12 +40,14 @@ export default function App() {
   } = usePWAInstall();
 
   const handleLoginSuccess = (userData) => {
-    setUser((prev) => ({ ...prev, ...userData }));
+    setUser(userData);
     setIsLoggedIn(true);
   };
 
   const handleLogout = () => {
+    setUser(null);
     setIsLoggedIn(false);
+    setActiveTab('dashboard');
   };
 
   const handleUpdateProfile = (updatedData) => {

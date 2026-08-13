@@ -82,28 +82,24 @@ const complianceAlerts = initialData.complianceAlerts;
 export async function initDb() {
   await sequelize.sync({ alter: true });
 
-  const userCount = await User.count();
-  if (userCount === 0) {
-    const dbType = isPostgres ? 'PostgreSQL' : 'SQLite';
-    console.log(`Database empty. Migrating mock data to ${dbType}...`);
-    let dataToMigrate = initialData;
+  const dbType = isPostgres ? 'PostgreSQL' : 'SQLite';
+  let dataToMigrate = initialData;
 
-    if (fs.existsSync(DB_FILE)) {
-      try {
-        const raw = fs.readFileSync(DB_FILE, 'utf-8');
-        const parsed = JSON.parse(raw);
-        dataToMigrate = { ...initialData, ...parsed };
-      } catch (e) {
-        console.error('Error reading data.json, using defaults:', e);
-      }
+  if (fs.existsSync(DB_FILE)) {
+    try {
+      const raw = fs.readFileSync(DB_FILE, 'utf-8');
+      const parsed = JSON.parse(raw);
+      dataToMigrate = { ...initialData, ...parsed };
+    } catch (e) {
+      console.error('Error reading data.json, using defaults:', e);
     }
+  }
 
-    // Seed tables
+  // 1. Seed Users if empty
+  const userCount = await User.count();
+  if (userCount === 0 && dataToMigrate.users?.length) {
     await User.bulkCreate(dataToMigrate.users);
-    await Vehicle.bulkCreate(dataToMigrate.vehicles);
-    await Trip.bulkCreate(dataToMigrate.trips);
-    await Transaction.bulkCreate(dataToMigrate.transactions || []);
-    console.log(`Seeding and migration to ${dbType} complete.`);
+    console.log(`Seeded ${dataToMigrate.users.length} users into ${dbType}.`);
   } else {
     // Ensure default admin user has Admin role
     const adminUser = await User.findOne({
@@ -116,6 +112,27 @@ export async function initDb() {
       await adminUser.save();
       console.log('Updated default admin account to role: Admin');
     }
+  }
+
+  // 2. Seed Vehicles if empty
+  const vehicleCount = await Vehicle.count();
+  if (vehicleCount === 0 && dataToMigrate.vehicles?.length) {
+    await Vehicle.bulkCreate(dataToMigrate.vehicles);
+    console.log(`Seeded ${dataToMigrate.vehicles.length} vehicles into ${dbType}.`);
+  }
+
+  // 3. Seed Trips if empty
+  const tripCount = await Trip.count();
+  if (tripCount === 0 && dataToMigrate.trips?.length) {
+    await Trip.bulkCreate(dataToMigrate.trips);
+    console.log(`Seeded ${dataToMigrate.trips.length} trips into ${dbType}.`);
+  }
+
+  // 4. Seed Transactions if empty
+  const txCount = await Transaction.count();
+  if (txCount === 0 && dataToMigrate.transactions?.length) {
+    await Transaction.bulkCreate(dataToMigrate.transactions);
+    console.log(`Seeded ${dataToMigrate.transactions.length} transactions into ${dbType}.`);
   }
 }
 

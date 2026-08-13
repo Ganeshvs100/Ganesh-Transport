@@ -3,8 +3,8 @@ import { Truck, User, Lock, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import { loginUser } from '../api';
 
 export default function LoginPage({ onLoginSuccess, onNavigateToRegister }) {
-  const [username, setUsername] = useState('admin@ganeshtransport.com');
-  const [password, setPassword] = useState('admin123');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);

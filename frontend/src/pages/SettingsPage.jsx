@@ -37,7 +37,7 @@ export default function SettingsPage({ user, onUpdateProfile, isDarkMode, setIsD
   // Status message
   const [savedMsg, setSavedMsg] = useState('');
 
-  const isAdmin = user?.role === 'Admin' || user?.role?.toLowerCase() === 'admin' || user?.username === 'admin' || user?.email === 'admin@ganeshtransport.com';
+  const isAdmin = user?.role?.trim()?.toLowerCase() === 'admin' || user?.username === 'admin';
 
   const handleProfileSave = (e) => {
     e.preventDefault();

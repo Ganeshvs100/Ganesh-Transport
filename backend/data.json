@@ -252,5 +252,57 @@
       "lastUpdated": "10 mins ago",
       "alert": null
     }
+  ],
+  "transactions": [
+    {
+      "id": "tx-1",
+      "title": "Mumbai → Ahmedabad Freight Payment",
+      "type": "Income",
+      "category": "Freight Advance",
+      "amount": 42500,
+      "date": "Today, 02:30 PM",
+      "vehicle": "MH-01-AX-4592",
+      "notes": "Received via Bank Transfer"
+    },
+    {
+      "id": "tx-2",
+      "title": "Diesel Refuel at HPCL Depot",
+      "type": "Expense",
+      "category": "Fuel",
+      "amount": 14200,
+      "date": "Today, 11:15 AM",
+      "vehicle": "MH-12-PQ-8842",
+      "notes": "Full tank 150L"
+    },
+    {
+      "id": "tx-3",
+      "title": "FASTag Toll Charge - NH48",
+      "type": "Expense",
+      "category": "Toll Tax",
+      "amount": 1850,
+      "date": "Today, 09:40 AM",
+      "vehicle": "MH-12-AX-4502",
+      "notes": "FASTag Auto Pay"
+    },
+    {
+      "id": "tx-4",
+      "title": "Tyre Replacement & Alignment",
+      "type": "Expense",
+      "category": "Maintenance",
+      "amount": 8500,
+      "date": "Yesterday",
+      "vehicle": "HR-55-XY-0092",
+      "notes": "Workshop B repair"
+    },
+    {
+      "id": "tx-5",
+      "title": "Surat Dispatch Final Payment",
+      "type": "Income",
+      "category": "Freight Balance",
+      "amount": 65000,
+      "date": "Yesterday",
+      "vehicle": "GJ-05-CT-1211",
+      "notes": "Paid by client"
+    }
   ]
 }
