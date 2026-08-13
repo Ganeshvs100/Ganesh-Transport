@@ -6,7 +6,9 @@ import AddModal from './components/AddModal';
 import Sidebar from './components/Sidebar';
 import InstallBanner from './components/InstallBanner';
 import InstallGuideModal from './components/InstallGuideModal';
+import NotificationPanel from './components/NotificationPanel';
 import { usePWAInstall } from './hooks/usePWAInstall';
+import { useNotifications } from './hooks/useNotifications';
 
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
@@ -54,6 +56,19 @@ export default function App() {
     showGuideModal,
     setShowGuideModal
   } = usePWAInstall();
+
+  const [isNotifPanelOpen, setIsNotifPanelOpen] = useState(false);
+
+  const {
+    alerts,
+    unreadCount,
+    permissionStatus,
+    lastChecked,
+    requestPermission,
+    checkExpiryAlerts,
+    dismissAlert,
+    dismissAll,
+  } = useNotifications();
 
   const handleLoginSuccess = (userData, remember = true) => {
     setUser(userData);
@@ -164,6 +179,8 @@ export default function App() {
               onInstallApp={installApp}
               isInstalled={isInstalled}
               onOpenAddModal={() => setIsAddModalOpen(true)}
+              onOpenNotifications={() => setIsNotifPanelOpen(true)}
+              notifCount={unreadCount}
             />
 
             {/* Main Content Area */}
@@ -246,6 +263,23 @@ export default function App() {
           onClose={() => setShowGuideModal(false)}
           isIOS={isIOS}
           onInstallPrompt={installApp}
+        />
+
+        {/* Notification Panel */}
+        <NotificationPanel
+          isOpen={isNotifPanelOpen}
+          onClose={() => setIsNotifPanelOpen(false)}
+          alerts={alerts}
+          unreadCount={unreadCount}
+          permissionStatus={permissionStatus}
+          onRequestPermission={async () => {
+            const result = await requestPermission();
+            if (result === 'granted') checkExpiryAlerts(false);
+          }}
+          onDismiss={dismissAlert}
+          onDismissAll={dismissAll}
+          onRefresh={() => checkExpiryAlerts(false)}
+          lastChecked={lastChecked}
         />
       </div>
     </div>
