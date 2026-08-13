@@ -30,11 +30,6 @@ export default function Header({ title, isDarkMode, setIsDarkMode, onLogout }) {
           <span className="notification-badge"></span>
         </button>
 
-        {/* Logout Button (Replaces human icon) */}
-        <button className="logout-btn" onClick={onLogout} title="Logout of गणेश Transport">
-          <LogOut size={15} />
-          <span>Logout</span>
-        </button>
       </div>
     </header>
   );

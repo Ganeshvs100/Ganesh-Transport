@@ -136,6 +136,8 @@ export default function RegisterPage({ onRegisterSuccess, onBackToLogin }) {
                     <option value="Dispatcher">Dispatcher</option>
                     <option value="Driver">Driver</option>
                     <option value="Fleet Manager">Fleet Manager</option>
+                    <option value="Owner">Owner</option>
+                    <option value="Co-Owner">Co-Owner</option>
                   </select>
                 </div>
               </div>

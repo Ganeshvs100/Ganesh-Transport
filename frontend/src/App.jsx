@@ -12,6 +12,7 @@ import TripsPage from './pages/TripsPage';
 import ExpensesPage from './pages/ExpensesPage';
 import SettingsPage from './pages/SettingsPage';
 import RegisterPage from './pages/RegisterPage';
+import AdminPage from './pages/AdminPage';
 
 import { createVehicle, createTrip, createTransaction } from './api';
 import { Plus } from 'lucide-react';
@@ -27,6 +28,7 @@ export default function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isRegisterPage, setIsRegisterPage] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const isAdmin = user?.role === 'Fleet Manager' || user?.role?.includes('Manager') || user?.role === 'Owner' || user?.role === 'Co-Owner' || user?.email === 'admin@ganeshtransport.com';
 
   const handleLoginSuccess = (userData) => {
     setUser((prev) => ({ ...prev, ...userData }));
@@ -81,7 +83,7 @@ export default function App() {
       <div className="app-phone-container">
         <div className="app-layout-wrapper">
           {/* Desktop Sidebar Navigation */}
-          <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} />
+          <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} user={user} />
 
           <div className="app-main-layout">
             {/* Header Bar */}
@@ -95,6 +97,8 @@ export default function App() {
                   ? 'Trips'
                   : activeTab === 'expenses'
                   ? 'Expenses & Income'
+                  : activeTab === 'admin'
+                  ? 'Admin Panel'
                   : 'Settings'
               }
               isDarkMode={isDarkMode}
@@ -138,6 +142,10 @@ export default function App() {
                   onLogout={handleLogout}
                 />
               )}
+
+              {activeTab === 'admin' && isAdmin && (
+                <AdminPage currentUser={user} />
+              )}
             </main>
           </div>
         </div>
@@ -152,7 +160,7 @@ export default function App() {
         </button>
 
         {/* Bottom Navigation Bar */}
-        <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
+        <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} user={user} />
 
         {/* Floating Add Modal */}
         <AddModal

@@ -132,40 +132,81 @@ app.post('/api/admin/users/reject', async (req, res) => {
   }
 });
 
+app.get('/api/admin/users', async (req, res) => {
+  try {
+    const users = await User.findAll({
+      order: [['createdAt', 'DESC']]
+    });
+    res.json({ success: true, users });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+app.delete('/api/admin/users/:id', async (req, res) => {
+  try {
+    const user = await User.findByPk(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    if (user.username === 'admin') {
+      return res.status(400).json({ success: false, message: 'Cannot delete default admin user' });
+    }
+    await user.destroy();
+    res.json({ success: true, message: 'User deleted successfully.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+
 // Dashboard API
 app.get('/api/dashboard', async (req, res) => {
   try {
-    const totalFleet = 119 + (await Vehicle.count());
-    const totalTrips = 1277 + (await Trip.count());
-    const criticalExpiryCount = 6 + (await Vehicle.count({
+    const totalFleet = await Vehicle.count();
+    const totalTrips = await Trip.count();
+    const criticalExpiryCount = await Vehicle.count({
       where: {
         [Op.or]: [
           { isInsuranceAlert: true },
           { isFitnessAlert: true }
         ]
       }
-    }));
+    });
 
     const txs = await Transaction.findAll();
     const dbIncome = txs.filter(t => t.type === 'Income').reduce((sum, t) => sum + Number(t.amount || 0), 0);
     const dbExpense = txs.filter(t => t.type === 'Expense').reduce((sum, t) => sum + Number(t.amount || 0), 0);
 
-    const baseIncome = 8400000 - 107500;
-    const baseExpense = 5200000 - 24550;
-
-    const netIncome = baseIncome + dbIncome;
-    const netExpense = baseExpense + dbExpense;
+    const netIncome = dbIncome;
+    const netExpense = dbExpense;
     const netProfitVal = netIncome - netExpense;
+
+    const formatCurrency = (val) => {
+      const isNegative = val < 0;
+      const absVal = Math.abs(val);
+      let formatted = '';
+      if (absVal >= 1000000) {
+        formatted = `₹${(absVal / 1000000).toFixed(1)}M`;
+      } else if (absVal >= 1000) {
+        formatted = `₹${(absVal / 1000).toFixed(0)}K`;
+      } else {
+        formatted = `₹${absVal}`;
+      }
+      return isNegative ? `-${formatted}` : formatted;
+    };
 
     const stats = {
       totalTrips,
-      tripsChange: '+12% this month',
-      monthlyIncome: `₹${(netIncome / 1000000).toFixed(1)}M`,
-      incomeChange: '+5% vs target',
-      monthlyExpenses: `₹${(netExpense / 1000000).toFixed(1)}M`,
-      expensesChange: '-3% operational savings',
-      netProfit: `₹${(netProfitVal / 1000000).toFixed(1)}M`,
-      profitChange: '+8% net margin',
+      tripsChange: totalTrips === 0 ? 'No trips logged' : 'Active tracking',
+      monthlyIncome: formatCurrency(netIncome),
+      incomeChange: 'Total inflows',
+      monthlyExpenses: formatCurrency(netExpense),
+      expensesChange: 'Total outflows',
+      netProfit: formatCurrency(netProfitVal),
+      profitChange: 'Net margin',
       totalFleet,
       criticalExpiryCount
     };

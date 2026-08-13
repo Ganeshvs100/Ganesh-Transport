@@ -12,11 +12,8 @@ import {
   Shield,
   Save,
   LogOut,
-  CheckCircle2,
-  Check,
-  X
+  CheckCircle2
 } from 'lucide-react';
-import { fetchPendingUsers, approveUser, rejectUser } from '../api';
 
 export default function SettingsPage({ user, onUpdateProfile, isDarkMode, setIsDarkMode, onLogout }) {
   const [name, setName] = useState(user?.name || 'Ganesh Shinde');
@@ -37,50 +34,7 @@ export default function SettingsPage({ user, onUpdateProfile, isDarkMode, setIsD
   // Status message
   const [savedMsg, setSavedMsg] = useState('');
 
-  const [pendingApprovals, setPendingApprovals] = useState([]);
-  const isAdmin = user?.role === 'Fleet Manager' || user?.role?.includes('Manager') || user?.email === 'admin@ganeshtransport.com';
-
-  useEffect(() => {
-    if (isAdmin) {
-      loadPending();
-    }
-  }, [isAdmin]);
-
-  const loadPending = async () => {
-    try {
-      const res = await fetchPendingUsers();
-      if (res && res.success) {
-        setPendingApprovals(res.users || []);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleApprove = async (userId) => {
-    try {
-      const res = await approveUser(userId);
-      if (res && res.success) {
-        setPendingApprovals(prev => prev.filter(u => u.id !== userId));
-        alert(res.message);
-      }
-    } catch (err) {
-      alert('Approval failed.');
-    }
-  };
-
-  const handleReject = async (userId) => {
-    if (!confirm('Are you sure you want to reject this registration request?')) return;
-    try {
-      const res = await rejectUser(userId);
-      if (res && res.success) {
-        setPendingApprovals(prev => prev.filter(u => u.id !== userId));
-        alert(res.message);
-      }
-    } catch (err) {
-      alert('Rejection failed.');
-    }
-  };
+  const isAdmin = user?.role === 'Fleet Manager' || user?.role?.includes('Manager') || user?.role === 'Owner' || user?.role === 'Co-Owner' || user?.email === 'admin@ganeshtransport.com';
 
   const handleProfileSave = (e) => {
     e.preventDefault();
@@ -273,9 +227,8 @@ export default function SettingsPage({ user, onUpdateProfile, isDarkMode, setIsD
             <button
               className={`switch-btn ${isDarkMode ? 'active' : ''}`}
               onClick={() => setIsDarkMode(!isDarkMode)}
-            >
-              {isDarkMode ? <Moon size={14} /> : <Sun size={14} />}
-            </button>
+              aria-label="Toggle Dark Theme"
+            />
           </div>
 
           <div className="toggle-item">
@@ -286,9 +239,8 @@ export default function SettingsPage({ user, onUpdateProfile, isDarkMode, setIsD
             <button
               className={`switch-btn ${smsAlerts ? 'active' : ''}`}
               onClick={() => setSmsAlerts(!smsAlerts)}
-            >
-              {smsAlerts ? 'ON' : 'OFF'}
-            </button>
+              aria-label="Toggle SMS Dispatch Alerts"
+            />
           </div>
 
           <div className="toggle-item">
@@ -299,93 +251,13 @@ export default function SettingsPage({ user, onUpdateProfile, isDarkMode, setIsD
             <button
               className={`switch-btn ${fastagAuto ? 'active' : ''}`}
               onClick={() => setFastagAuto(!fastagAuto)}
-            >
-              {fastagAuto ? 'ON' : 'OFF'}
-            </button>
+              aria-label="Toggle FASTag Low Balance Alerts"
+            />
           </div>
         </div>
       </div>
 
-      {/* Admin Approvals List */}
-      {isAdmin && (
-        <div className="settings-section-card">
-          <div className="settings-card-title">
-            <Shield size={18} className="icon-blue" />
-            <span>Pending User Registrations</span>
-          </div>
 
-          {pendingApprovals.length === 0 ? (
-            <p style={{ fontSize: '0.82rem', color: '#64748b', textAlign: 'center', padding: '10px 0' }}>
-              No pending registrations found.
-            </p>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {pendingApprovals.map((pendingUser) => (
-                <div
-                  key={pendingUser.id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '12px',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: '10px',
-                    background: 'var(--gray-bg)'
-                  }}
-                  className="pending-user-row"
-                >
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-main)' }}>
-                      {pendingUser.name} (@{pendingUser.username})
-                    </span>
-                    <span style={{ fontSize: '0.72rem', color: '#64748b' }}>
-                      {pendingUser.email} • Role: <strong>{pendingUser.role}</strong>
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button
-                      onClick={() => handleApprove(pendingUser.id)}
-                      style={{
-                        background: '#16a34a',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '6px',
-                        padding: '6px 10px',
-                        cursor: 'pointer',
-                        fontSize: '0.75rem',
-                        fontWeight: '700',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '2px'
-                      }}
-                    >
-                      <Check size={12} /> Approve
-                    </button>
-                    <button
-                      onClick={() => handleReject(pendingUser.id)}
-                      style={{
-                        background: '#dc2626',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '6px',
-                        padding: '6px 10px',
-                        cursor: 'pointer',
-                        fontSize: '0.75rem',
-                        fontWeight: '700',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '2px'
-                      }}
-                    >
-                      <X size={12} /> Reject
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Logout Action Button */}
       <div className="logout-section-card">

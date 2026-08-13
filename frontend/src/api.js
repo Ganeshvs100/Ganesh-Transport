@@ -155,3 +155,26 @@ export async function rejectUser(userId) {
     return { success: false, message: err.message };
   }
 }
+
+export async function fetchAllUsers() {
+  try {
+    const res = await fetch(`${API_BASE}/admin/users`);
+    if (!res.ok) throw new Error('API Error');
+    return await res.json();
+  } catch (err) {
+    console.warn('Failed to fetch all users:', err);
+    return null;
+  }
+}
+
+export async function deleteUser(userId) {
+  try {
+    const res = await fetch(`${API_BASE}/admin/users/${userId}`, {
+      method: 'DELETE'
+    });
+    return await res.json();
+  } catch (err) {
+    return { success: false, message: err.message };
+  }
+}
+
