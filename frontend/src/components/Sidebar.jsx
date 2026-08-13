@@ -1,7 +1,7 @@
 import React from 'react';
-import { LayoutDashboard, Navigation, Truck, Wallet, Settings, LogOut, Shield } from 'lucide-react';
+import { LayoutDashboard, Navigation, Truck, Wallet, Settings, LogOut, Shield, Plus } from 'lucide-react';
 
-export default function Sidebar({ activeTab, setActiveTab, onLogout, user }) {
+export default function Sidebar({ activeTab, setActiveTab, onLogout, user, onOpenAddModal }) {
   const isAdmin = user?.role?.trim()?.toLowerCase() === 'admin' || user?.username === 'admin';
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -25,6 +25,36 @@ export default function Sidebar({ activeTab, setActiveTab, onLogout, user }) {
           </span>
         </div>
       </div>
+
+      {/* Sidebar Quick Action Button */}
+      {onOpenAddModal && (
+        <div style={{ padding: '0 4px 12px 4px' }}>
+          <button
+            className="sidebar-add-btn"
+            onClick={onOpenAddModal}
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              padding: '10px 14px',
+              background: 'linear-gradient(135deg, #1e40af 0%, #2563eb 100%)',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '12px',
+              fontSize: '0.85rem',
+              fontWeight: '700',
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
+              transition: 'all 0.2s'
+            }}
+          >
+            <Plus size={16} />
+            <span>New Entry</span>
+          </button>
+        </div>
+      )}
 
       <nav className="sidebar-menu">
         {navItems.map((item) => {

@@ -26,7 +26,7 @@ app.post('/api/auth/login', async (req, res) => {
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid credentials. Try demo login or use admin / admin123'
+        message: 'Invalid email or password. Please check your credentials and try again.'
       });
     }
 
@@ -53,23 +53,25 @@ app.post('/api/auth/login', async (req, res) => {
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { username, email, password, name, role } = req.body;
-    if (!username || !email || !password || !name) {
-      return res.status(400).json({ success: false, message: 'All fields are required' });
+    if (!email || !password || !name) {
+      return res.status(400).json({ success: false, message: 'Full name, email and password are required' });
     }
+    // Use email as username if not provided
+    const effectiveUsername = username || email;
 
     const existingUser = await User.findOne({
       where: {
-        [Op.or]: [{ username }, { email }]
+        [Op.or]: [{ username: effectiveUsername }, { email }]
       }
     });
 
     if (existingUser) {
-      return res.status(400).json({ success: false, message: 'Username or Email is already registered' });
+      return res.status(400).json({ success: false, message: 'This email is already registered' });
     }
 
     await User.create({
       id: `usr-${Date.now()}`,
-      username,
+      username: effectiveUsername,
       email,
       password,
       name,
@@ -320,6 +322,12 @@ app.post('/api/vehicles', async (req, res) => {
       insuranceFormatted: req.body.insuranceFormatted || formatDate(req.body.insuranceExpiry) || '31 Dec 2025',
       fitnessExpiry: req.body.fitnessExpiry || '2025-11-30',
       fitnessFormatted: req.body.fitnessFormatted || formatDate(req.body.fitnessExpiry) || '30 Nov 2025',
+      permitExpiry: req.body.permitExpiry || '',
+      permitFormatted: req.body.permitFormatted || formatDate(req.body.permitExpiry) || '',
+      pucExpiry: req.body.pucExpiry || '',
+      pucFormatted: req.body.pucFormatted || formatDate(req.body.pucExpiry) || '',
+      driverName: req.body.driverName || '',
+      driverPhone: req.body.driverPhone || '',
       location: req.body.location || 'Mumbai Depot',
       isInsuranceAlert: false,
       isFitnessAlert: false,

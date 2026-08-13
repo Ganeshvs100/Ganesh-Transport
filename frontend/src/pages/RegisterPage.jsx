@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { Truck, User, Lock, Mail, Eye, EyeOff, ShieldCheck, ArrowLeft, Briefcase, Building2, Shield, Navigation } from 'lucide-react';
+import { Truck, User, Lock, Mail, Eye, EyeOff, ArrowLeft, Briefcase, Building2, Shield, Navigation } from 'lucide-react';
 import { registerUser } from '../api';
 
 export default function RegisterPage({ onRegisterSuccess, onBackToLogin }) {
-  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -20,7 +19,8 @@ export default function RegisterPage({ onRegisterSuccess, onBackToLogin }) {
     setSuccessMsg('');
 
     try {
-      const res = await registerUser({ username, email, password, name, role });
+      // Use email as username for backend compatibility
+      const res = await registerUser({ username: email, email, password, name, role });
       if (res.success) {
         setSuccessMsg(res.message || 'Registration request submitted! Please wait for admin approval.');
         setTimeout(() => {
@@ -107,7 +107,7 @@ export default function RegisterPage({ onRegisterSuccess, onBackToLogin }) {
           <div className="login-logo-box">
             <Truck size={30} className="login-logo-icon" />
           </div>
-          <h1 className="login-title">Register Account</h1>
+          <h1 className="login-title">Create Account</h1>
           <p className="login-subtitle">Ganesh Transport Management Portal</p>
         </div>
 
@@ -117,6 +117,7 @@ export default function RegisterPage({ onRegisterSuccess, onBackToLogin }) {
 
           {!successMsg && (
             <form onSubmit={handleSubmit} className="login-form">
+              {/* Full Name */}
               <div className="login-field">
                 <label>Full Name</label>
                 <div className="input-with-icon">
@@ -131,20 +132,7 @@ export default function RegisterPage({ onRegisterSuccess, onBackToLogin }) {
                 </div>
               </div>
 
-              <div className="login-field">
-                <label>Username</label>
-                <div className="input-with-icon">
-                  <User size={16} className="field-icon" />
-                  <input
-                    type="text"
-                    placeholder="Choose a username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-
+              {/* Email */}
               <div className="login-field">
                 <label>Email Address</label>
                 <div className="input-with-icon">
@@ -159,16 +147,18 @@ export default function RegisterPage({ onRegisterSuccess, onBackToLogin }) {
                 </div>
               </div>
 
+              {/* Password */}
               <div className="login-field">
                 <label>Password</label>
                 <div className="input-with-icon">
                   <Lock size={16} className="field-icon" />
                   <input
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
+                    placeholder="Create a strong password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    minLength={6}
                   />
                   <button
                     type="button"
@@ -180,8 +170,9 @@ export default function RegisterPage({ onRegisterSuccess, onBackToLogin }) {
                 </div>
               </div>
 
+              {/* Role */}
               <div className="login-field">
-                <label>Select Role</label>
+                <label>Select Your Role</label>
                 <div className="input-with-icon">
                   <Briefcase size={16} className="field-icon" />
                   <select
@@ -196,7 +187,8 @@ export default function RegisterPage({ onRegisterSuccess, onBackToLogin }) {
                       borderRadius: '10px',
                       fontSize: '0.85rem',
                       fontWeight: '600',
-                      color: '#0f172a'
+                      color: '#0f172a',
+                      appearance: 'none',
                     }}
                   >
                     <option value="Owner">Owner (Business Owner)</option>
@@ -209,11 +201,11 @@ export default function RegisterPage({ onRegisterSuccess, onBackToLogin }) {
                 </div>
               </div>
 
-              {/* Dynamic Role Info Preview Box */}
+              {/* Dynamic Role Preview */}
               <div
                 style={{
                   display: 'flex',
-                  alignItems: 'center',
+                  alignItems: 'flex-start',
                   gap: '8px',
                   padding: '10px 12px',
                   borderRadius: '10px',
@@ -224,40 +216,37 @@ export default function RegisterPage({ onRegisterSuccess, onBackToLogin }) {
                   lineHeight: '1.4'
                 }}
               >
-                <RoleIcon size={16} style={{ flexShrink: 0 }} />
+                <RoleIcon size={16} style={{ flexShrink: 0, marginTop: '1px' }} />
                 <span>{roleInfo.text}</span>
               </div>
 
-              <button type="submit" className="login-submit-btn" disabled={loading} style={{ marginTop: '6px' }}>
+              <button type="submit" className="login-submit-btn" disabled={loading}>
                 {loading ? 'Submitting...' : 'Register & Request Approval'}
               </button>
             </form>
           )}
 
-          <div className="login-contact" style={{ marginTop: '15px' }}>
+          <div className="login-contact" style={{ marginTop: '16px', textAlign: 'center' }}>
             <button
+              type="button"
               onClick={onBackToLogin}
               style={{
                 background: 'none',
                 border: 'none',
                 color: '#2563eb',
                 cursor: 'pointer',
-                fontWeight: '600',
+                fontWeight: '700',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '4px',
-                fontSize: '0.78rem'
+                gap: '5px',
+                fontSize: '0.82rem',
+                padding: '4px 8px',
+                borderRadius: '6px',
+                transition: 'background 0.15s'
               }}
             >
               <ArrowLeft size={14} /> Back to Login
             </button>
-          </div>
-        </div>
-
-        <div className="login-footer">
-          <div className="security-badge">
-            <ShieldCheck size={14} className="security-icon" />
-            <span>SECURE SUBMISSION</span>
           </div>
         </div>
       </div>

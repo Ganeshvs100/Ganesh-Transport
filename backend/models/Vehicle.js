@@ -71,5 +71,29 @@ export default function defineVehicle(sequelize) {
       type: DataTypes.STRING,
       allowNull: true,
     },
+    permitExpiry: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    permitFormatted: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    pucExpiry: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    pucFormatted: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    driverName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    driverPhone: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   });
 }

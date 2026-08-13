@@ -137,7 +137,83 @@
   border: 2px solid #DBEAFE;
 }
 
-/* Bottom Navigation */
+/* Header Quick-Add & Download Buttons */
+.header-quick-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(37, 99, 235, 0.3);
+  transition: all 0.2s ease;
+}
+
+.header-quick-add-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgba(37, 99, 235, 0.4);
+}
+
+.header-download-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  background: #F1F5F9;
+  color: #334155;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.header-download-btn:hover {
+  background: #E2E8F0;
+}
+
+/* Header Role Pill */
+.header-role-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.admin-pill {
+  background: #eff6ff;
+  color: #1e40af;
+  border: 1px solid #bfdbfe;
+}
+
+.normal-pill {
+  background: #f8fafc;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+/* Responsive: hide text on tiny screens */
+@media (max-width: 380px) {
+  .add-btn-text,
+  .download-text {
+    display: none;
+  }
+  .header-quick-add-btn,
+  .header-download-btn {
+    padding: 7px 10px;
+  }
+}
+
+
 .bottom-nav {
   height: 64px;
   background: #FFFFFF;

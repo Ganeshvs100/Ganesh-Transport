@@ -176,7 +176,7 @@ export default function VehiclesPage({ onOpenAddModal }) {
                     <span className="info-label">Insurance Expiry</span>
                     <div className={`info-value ${v.isInsuranceAlert ? 'alert-text-red' : ''}`}>
                       {v.isInsuranceAlert && <AlertTriangle size={14} className="inline-icon red" />}
-                      <span>{v.insuranceFormatted || '15 Mar 2025'}</span>
+                      <span>{v.insuranceFormatted || '—'}</span>
                     </div>
                   </div>
 
@@ -184,9 +184,36 @@ export default function VehiclesPage({ onOpenAddModal }) {
                     <span className="info-label">Fitness Expiry</span>
                     <div className={`info-value ${v.isFitnessAlert ? 'alert-text-blue' : ''}`}>
                       {v.isFitnessAlert && <Clock size={14} className="inline-icon blue" />}
-                      <span>{v.fitnessFormatted || '02 Feb 2025'}</span>
+                      <span>{v.fitnessFormatted || '—'}</span>
                     </div>
                   </div>
+
+                  {v.permitFormatted && (
+                    <div className="info-block">
+                      <span className="info-label">Permit Expiry</span>
+                      <div className="info-value">
+                        <span>{v.permitFormatted}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {v.pucFormatted && (
+                    <div className="info-block">
+                      <span className="info-label">PUC Expiry</span>
+                      <div className="info-value">
+                        <span>{v.pucFormatted}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {v.driverName && (
+                    <div className="info-block" style={{ gridColumn: '1 / -1' }}>
+                      <span className="info-label">Assigned Driver</span>
+                      <div className="info-value">
+                        <span>{v.driverName}{v.driverPhone ? ` · ${v.driverPhone}` : ''}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Loan Info Block */}

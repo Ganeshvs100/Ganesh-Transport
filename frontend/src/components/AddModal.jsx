@@ -27,6 +27,10 @@ export default function AddModal({
   const [vehicleStatus, setVehicleStatus] = useState('Active');
   const [insuranceExpiry, setInsuranceExpiry] = useState('');
   const [fitnessExpiry, setFitnessExpiry] = useState('');
+  const [permitExpiry, setPermitExpiry] = useState('');
+  const [pucExpiry, setPucExpiry] = useState('');
+  const [driverName, setDriverName] = useState('');
+  const [driverPhone, setDriverPhone] = useState('');
   const [location, setLocation] = useState('');
 
   // Loan fields
@@ -46,6 +50,17 @@ export default function AddModal({
   const [eta, setEta] = useState('Tomorrow, 10:00 AM');
 
   if (!isOpen) return null;
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return dateStr;
+    return date.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
+  };
 
   const handleEntrySubmit = (e) => {
     e.preventDefault();
@@ -70,9 +85,15 @@ export default function AddModal({
       model,
       status: vehicleStatus,
       insuranceExpiry,
-      insuranceFormatted: insuranceExpiry || '25 Oct 2025',
+      insuranceFormatted: formatDate(insuranceExpiry) || '31 Dec 2025',
       fitnessExpiry,
-      fitnessFormatted: fitnessExpiry || '10 Nov 2025',
+      fitnessFormatted: formatDate(fitnessExpiry) || '30 Nov 2025',
+      permitExpiry,
+      permitFormatted: formatDate(permitExpiry) || '',
+      pucExpiry,
+      pucFormatted: formatDate(pucExpiry) || '',
+      driverName,
+      driverPhone,
       location: location || 'Depot Hub',
       isLoan,
       ...(isLoan && {
@@ -284,6 +305,82 @@ export default function AddModal({
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                   />
+                </div>
+              </div>
+
+              {/* Document Expiries & Compliance Section */}
+              <div style={{ background: 'var(--gray-bg, #f8fafc)', padding: '14px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-main, #0f172a)' }}>
+                  📄 Document Expiries & Compliance
+                </span>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Insurance Expiry Date</label>
+                    <input
+                      type="date"
+                      value={insuranceExpiry}
+                      onChange={(e) => setInsuranceExpiry(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Fitness Expiry Date</label>
+                    <input
+                      type="date"
+                      value={fitnessExpiry}
+                      onChange={(e) => setFitnessExpiry(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>State/National Permit Expiry</label>
+                    <input
+                      type="date"
+                      value={permitExpiry}
+                      onChange={(e) => setPermitExpiry(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>PUC (Pollution) Expiry</label>
+                    <input
+                      type="date"
+                      value={pucExpiry}
+                      onChange={(e) => setPucExpiry(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Driver Assignment Section */}
+              <div style={{ background: 'var(--gray-bg, #f8fafc)', padding: '14px', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-main, #0f172a)' }}>
+                  👤 Assigned Driver (Optional)
+                </span>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Driver Full Name</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Ramesh Kumar"
+                      value={driverName}
+                      onChange={(e) => setDriverName(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Driver Phone Number</label>
+                    <input
+                      type="tel"
+                      placeholder="e.g. +91 98765 43210"
+                      value={driverPhone}
+                      onChange={(e) => setDriverPhone(e.target.value)}
+                    />
+                  </div>
                 </div>
               </div>
 

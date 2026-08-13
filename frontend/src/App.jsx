@@ -21,8 +21,24 @@ import { createVehicle, createTrip, createTransaction } from './api';
 import { Plus } from 'lucide-react';
 
 export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    try {
+      const saved = localStorage.getItem('gt_auth_user') || sessionStorage.getItem('gt_auth_user');
+      return !!saved;
+    } catch {
+      return false;
+    }
+  });
+
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('gt_auth_user') || sessionStorage.getItem('gt_auth_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isRegisterPage, setIsRegisterPage] = useState(false);
@@ -39,19 +55,44 @@ export default function App() {
     setShowGuideModal
   } = usePWAInstall();
 
-  const handleLoginSuccess = (userData) => {
+  const handleLoginSuccess = (userData, remember = true) => {
     setUser(userData);
     setIsLoggedIn(true);
+    try {
+      if (remember) {
+        localStorage.setItem('gt_auth_user', JSON.stringify(userData));
+        sessionStorage.removeItem('gt_auth_user');
+      } else {
+        sessionStorage.setItem('gt_auth_user', JSON.stringify(userData));
+        localStorage.removeItem('gt_auth_user');
+      }
+    } catch (e) {
+      console.warn('Storage error:', e);
+    }
   };
 
   const handleLogout = () => {
     setUser(null);
     setIsLoggedIn(false);
     setActiveTab('dashboard');
+    try {
+      localStorage.removeItem('gt_auth_user');
+      sessionStorage.removeItem('gt_auth_user');
+    } catch (e) {}
   };
 
   const handleUpdateProfile = (updatedData) => {
-    setUser((prev) => ({ ...prev, ...updatedData }));
+    setUser((prev) => {
+      const next = { ...prev, ...updatedData };
+      try {
+        if (localStorage.getItem('gt_auth_user')) {
+          localStorage.setItem('gt_auth_user', JSON.stringify(next));
+        } else {
+          sessionStorage.setItem('gt_auth_user', JSON.stringify(next));
+        }
+      } catch (e) {}
+      return next;
+    });
   };
 
   const handleAddVehicle = async (vehicleData) => {
@@ -73,10 +114,8 @@ export default function App() {
     if (isRegisterPage) {
       return (
         <RegisterPage
-          onRegisterSuccess={(newUser) => {
-            setIsRegisterPage(false);
-          }}
-          onNavigateToLogin={() => setIsRegisterPage(false)}
+          onRegisterSuccess={() => setIsRegisterPage(false)}
+          onBackToLogin={() => setIsRegisterPage(false)}
         />
       );
     }
@@ -93,7 +132,13 @@ export default function App() {
       <div className="app-phone-container">
         <div className="app-layout-wrapper">
           {/* Desktop Sidebar Navigation */}
-          <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} user={user} />
+          <Sidebar
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            onLogout={handleLogout}
+            user={user}
+            onOpenAddModal={() => setIsAddModalOpen(true)}
+          />
 
           <div className="app-main-layout">
             {/* Header Bar */}
@@ -118,6 +163,7 @@ export default function App() {
               isAdmin={isAdmin}
               onInstallApp={installApp}
               isInstalled={isInstalled}
+              onOpenAddModal={() => setIsAddModalOpen(true)}
             />
 
             {/* Main Content Area */}

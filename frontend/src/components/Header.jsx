@@ -1,7 +1,7 @@
 import React from 'react';
-import { Truck, Bell, Moon, Sun, Shield, User, Download, Smartphone } from 'lucide-react';
+import { Truck, Bell, Moon, Sun, Shield, User, Download, Smartphone, Plus } from 'lucide-react';
 
-export default function Header({ title, isDarkMode, setIsDarkMode, onLogout, user, isAdmin, onInstallApp, isInstalled }) {
+export default function Header({ title, isDarkMode, setIsDarkMode, onLogout, user, isAdmin, onInstallApp, isInstalled, onOpenAddModal }) {
   return (
     <header className="app-header">
       <div className="header-left">
@@ -14,6 +14,18 @@ export default function Header({ title, isDarkMode, setIsDarkMode, onLogout, use
       </div>
 
       <div className="header-right">
+        {/* Quick Add Entry Button (Web & Mobile) */}
+        {onOpenAddModal && (
+          <button
+            className="header-quick-add-btn"
+            onClick={onOpenAddModal}
+            title="Add Vehicle, Trip, or Transaction"
+          >
+            <Plus size={14} />
+            <span className="add-btn-text">Add</span>
+          </button>
+        )}
+
         {/* Download App Button (Mobile / Web) */}
         {!isInstalled && onInstallApp && (
           <button
