@@ -221,8 +221,8 @@ export default function SettingsPage({ user, onUpdateProfile, isDarkMode, setIsD
             </div>
           </div>
 
-          <button type="submit" className="secondary-btn">
-            Update Password
+          <button type="submit" className="update-password-btn">
+            <Lock size={16} /> Update Password
           </button>
         </form>
       </div>

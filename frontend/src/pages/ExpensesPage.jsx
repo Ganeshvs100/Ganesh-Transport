@@ -53,54 +53,57 @@ export default function ExpensesPage({ onOpenAddModal }) {
 
   return (
     <div className="page-container expenses-page">
-      <div className="page-header-row">
-        <h1 className="page-heading">Expenses & Income Ledger</h1>
-        <button className="add-entry-btn" onClick={onOpenAddModal}>
-          <Plus size={16} /> Add Today's Entry
-        </button>
-      </div>
+      <h1 className="page-heading">Expenses & Income Ledger</h1>
 
-      {/* Today's Financial Summary Header Cards */}
-      <div className="ledger-summary-grid">
-        <div className="ledger-card income-summary-card">
-          <div className="ledger-card-header">
-            <span className="ledger-card-title">Today's Income</span>
-            <div className="ledger-icon-box green">
-              <ArrowUpRight size={16} />
-            </div>
+      {/* Financial Summary Header Banner Cards (matching Fleet Overview design) */}
+      <div className="fleet-overview-grid">
+        <div className="overview-card fleet-total-card">
+          <span className="overview-title">TODAY'S INCOME</span>
+          <div className="overview-number-row">
+            <span className="overview-number" style={{ color: '#16a34a' }}>
+              ₹{Number(summary.todayIncome || 0).toLocaleString('en-IN')}
+            </span>
+            <span className="overview-tag" style={{ background: '#DCFCE7', color: '#15803d' }}>
+              Total Inflow
+            </span>
           </div>
-          <div className="ledger-card-value text-green">
-            ₹{summary.todayIncome ? summary.todayIncome.toLocaleString('en-IN') : '107,500'}
-          </div>
-          <div className="ledger-card-sub text-green">+ Received today</div>
         </div>
 
-        <div className="ledger-card expense-summary-card">
-          <div className="ledger-card-header">
-            <span className="ledger-card-title">Today's Expenses</span>
-            <div className="ledger-icon-box red">
-              <ArrowDownRight size={16} />
-            </div>
+        <div className="overview-card fleet-critical-card">
+          <span className="overview-title critical-text">TODAY'S EXPENSES</span>
+          <div className="overview-number-row">
+            <span className="overview-number critical-text">
+              ₹{Number(summary.todayExpenses || 0).toLocaleString('en-IN')}
+            </span>
+            <span className="overview-tag red-tag">
+              Total Outflow
+            </span>
           </div>
-          <div className="ledger-card-value text-red">
-            ₹{summary.todayExpenses ? summary.todayExpenses.toLocaleString('en-IN') : '24,550'}
-          </div>
-          <div className="ledger-card-sub text-muted">- Fuel & Operations</div>
         </div>
       </div>
 
       {/* Net Balance Card */}
-      <div className="net-balance-card">
+      <div className="net-balance-card" style={{
+        background: ((summary.todayIncome || 0) - (summary.todayExpenses || 0)) >= 0
+          ? 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%)'
+          : 'linear-gradient(135deg, #991b1b 0%, #b91c1c 100%)'
+      }}>
         <div className="net-balance-left">
           <Wallet size={20} className="net-balance-icon" />
           <div>
-            <div className="net-balance-label">Today's Net Balance</div>
+            <div className="net-balance-label">Net Balance</div>
             <div className="net-balance-val">
-              ₹{(summary.todayIncome - summary.todayExpenses || 82950).toLocaleString('en-IN')}
+              ₹{Number((summary.todayIncome || 0) - (summary.todayExpenses || 0)).toLocaleString('en-IN')}
             </div>
           </div>
         </div>
-        <span className="net-balance-pill">Positive Cashflow</span>
+        <span className="net-balance-pill" style={{
+          background: ((summary.todayIncome || 0) - (summary.todayExpenses || 0)) >= 0
+            ? 'rgba(255, 255, 255, 0.2)'
+            : 'rgba(255, 255, 255, 0.25)'
+        }}>
+          {((summary.todayIncome || 0) - (summary.todayExpenses || 0)) >= 0 ? 'Positive Cashflow' : 'Net Deficit'}
+        </span>
       </div>
 
       {/* Search Input */}
