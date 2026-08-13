@@ -161,6 +161,26 @@ app.delete('/api/admin/users/:id', async (req, res) => {
   }
 });
 
+app.patch('/api/admin/users/:id/role', async (req, res) => {
+  try {
+    const { role } = req.body;
+    if (!role) {
+      return res.status(400).json({ success: false, message: 'Role is required' });
+    }
+    const user = await User.findByPk(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    user.role = role;
+    await user.save();
+    res.json({ success: true, message: `Updated role for ${user.name} to ${role}`, user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+
 
 // Dashboard API
 app.get('/api/dashboard', async (req, res) => {

@@ -4,6 +4,9 @@ import Header from './components/Header';
 import BottomNav from './components/BottomNav';
 import AddModal from './components/AddModal';
 import Sidebar from './components/Sidebar';
+import InstallBanner from './components/InstallBanner';
+import InstallGuideModal from './components/InstallGuideModal';
+import { usePWAInstall } from './hooks/usePWAInstall';
 
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
@@ -22,13 +25,21 @@ export default function App() {
   const [user, setUser] = useState({
     name: 'Ganesh Shinde',
     email: 'admin@ganeshtransport.com',
-    role: 'Fleet Manager & Owner'
+    role: 'Admin'
   });
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isRegisterPage, setIsRegisterPage] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const isAdmin = user?.role === 'Fleet Manager' || user?.role?.includes('Manager') || user?.role === 'Owner' || user?.role === 'Co-Owner' || user?.email === 'admin@ganeshtransport.com';
+  const isAdmin = user?.role === 'Admin' || user?.role?.toLowerCase() === 'admin' || user?.username === 'admin' || user?.email === 'admin@ganeshtransport.com';
+
+  const {
+    isInstalled,
+    isIOS,
+    installApp,
+    showGuideModal,
+    setShowGuideModal
+  } = usePWAInstall();
 
   const handleLoginSuccess = (userData) => {
     setUser((prev) => ({ ...prev, ...userData }));
@@ -59,22 +70,21 @@ export default function App() {
   };
 
   if (!isLoggedIn) {
+    if (isRegisterPage) {
+      return (
+        <RegisterPage
+          onRegisterSuccess={(newUser) => {
+            setIsRegisterPage(false);
+          }}
+          onNavigateToLogin={() => setIsRegisterPage(false)}
+        />
+      );
+    }
     return (
-      <div className={`app-root fullscreen-view ${isDarkMode ? 'dark-theme' : 'light-theme'}`}>
-        <div className="app-phone-container">
-          {isRegisterPage ? (
-            <RegisterPage
-              onRegisterSuccess={() => setIsRegisterPage(false)}
-              onBackToLogin={() => setIsRegisterPage(false)}
-            />
-          ) : (
-            <LoginPage
-              onLoginSuccess={handleLoginSuccess}
-              onNavigateToRegister={() => setIsRegisterPage(true)}
-            />
-          )}
-        </div>
-      </div>
+      <LoginPage
+        onLoginSuccess={handleLoginSuccess}
+        onNavigateToRegister={() => setIsRegisterPage(true)}
+      />
     );
   }
 
@@ -104,6 +114,10 @@ export default function App() {
               isDarkMode={isDarkMode}
               setIsDarkMode={setIsDarkMode}
               onLogout={handleLogout}
+              user={user}
+              isAdmin={isAdmin}
+              onInstallApp={installApp}
+              isInstalled={isInstalled}
             />
 
             {/* Main Content Area */}
@@ -140,6 +154,8 @@ export default function App() {
                   isDarkMode={isDarkMode}
                   setIsDarkMode={setIsDarkMode}
                   onLogout={handleLogout}
+                  onInstallApp={installApp}
+                  isInstalled={isInstalled}
                 />
               )}
 
@@ -149,6 +165,12 @@ export default function App() {
             </main>
           </div>
         </div>
+
+        {/* Floating Mobile Install App Banner */}
+        <InstallBanner
+          isInstalled={isInstalled}
+          onInstall={installApp}
+        />
 
         {/* Fixed Floating Action Button (+) */}
         <button
@@ -170,6 +192,14 @@ export default function App() {
           onAddTrip={handleAddTrip}
           onAddTransaction={handleAddTransaction}
           activeTab={activeTab}
+        />
+
+        {/* Step-by-step PWA Install Guide Modal */}
+        <InstallGuideModal
+          isOpen={showGuideModal}
+          onClose={() => setShowGuideModal(false)}
+          isIOS={isIOS}
+          onInstallPrompt={installApp}
         />
       </div>
     </div>

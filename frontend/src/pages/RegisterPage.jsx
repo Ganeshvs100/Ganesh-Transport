@@ -133,11 +133,11 @@ export default function RegisterPage({ onRegisterSuccess, onBackToLogin }) {
                       fontSize: '0.85rem'
                     }}
                   >
-                    <option value="Dispatcher">Dispatcher</option>
-                    <option value="Driver">Driver</option>
-                    <option value="Fleet Manager">Fleet Manager</option>
-                    <option value="Owner">Owner</option>
-                    <option value="Co-Owner">Co-Owner</option>
+                    <option value="Dispatcher">Dispatcher (Normal User)</option>
+                    <option value="Driver">Driver (Normal User)</option>
+                    <option value="Fleet Manager">Fleet Manager (Normal User)</option>
+                    <option value="Staff">Operations Staff (Normal User)</option>
+                    <option value="Admin">Admin (Full Control)</option>
                   </select>
                 </div>
               </div>

@@ -2,7 +2,7 @@ import React from 'react';
 import { LayoutDashboard, Navigation, Truck, Wallet, Settings, Shield } from 'lucide-react';
 
 export default function BottomNav({ activeTab, setActiveTab, user }) {
-  const isAdmin = user?.role === 'Fleet Manager' || user?.role?.includes('Manager') || user?.role === 'Owner' || user?.role === 'Co-Owner' || user?.email === 'admin@ganeshtransport.com';
+  const isAdmin = user?.role === 'Admin' || user?.role?.toLowerCase() === 'admin' || user?.username === 'admin' || user?.email === 'admin@ganeshtransport.com';
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'trips', label: 'Trips', icon: Navigation },

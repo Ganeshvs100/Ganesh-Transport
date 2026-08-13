@@ -47,7 +47,7 @@ const initialData = {
       email: 'admin@ganeshtransport.com',
       password: 'admin123',
       name: 'Ganesh Shinde',
-      role: 'Fleet Manager',
+      role: 'Admin',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
       isApproved: true
     }
@@ -104,6 +104,18 @@ export async function initDb() {
     await Trip.bulkCreate(dataToMigrate.trips);
     await Transaction.bulkCreate(dataToMigrate.transactions || []);
     console.log(`Seeding and migration to ${dbType} complete.`);
+  } else {
+    // Ensure default admin user has Admin role
+    const adminUser = await User.findOne({
+      where: {
+        username: 'admin'
+      }
+    });
+    if (adminUser && adminUser.role !== 'Admin') {
+      adminUser.role = 'Admin';
+      await adminUser.save();
+      console.log('Updated default admin account to role: Admin');
+    }
   }
 }
 

@@ -16,10 +16,10 @@ export async function loginUser(username, password) {
     if ((username === 'admin' || username === 'admin@ganeshtransport.com') && password === 'admin123') {
       return {
         success: true,
-        user: { name: 'Ganesh Shinde', email: 'admin@ganeshtransport.com', role: 'Fleet Manager' }
+        user: { name: 'Ganesh Shinde', email: 'admin@ganeshtransport.com', role: 'Admin' }
       };
     }
-    return { success: true, user: { name: username || 'Fleet Manager', email: username } };
+    return { success: true, user: { name: username || 'User', email: username, role: 'Dispatcher' } };
   }
 }
 
@@ -171,6 +171,19 @@ export async function deleteUser(userId) {
   try {
     const res = await fetch(`${API_BASE}/admin/users/${userId}`, {
       method: 'DELETE'
+    });
+    return await res.json();
+  } catch (err) {
+    return { success: false, message: err.message };
+  }
+}
+
+export async function updateUserRole(userId, role) {
+  try {
+    const res = await fetch(`${API_BASE}/admin/users/${userId}/role`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role })
     });
     return await res.json();
   } catch (err) {

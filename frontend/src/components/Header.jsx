@@ -1,7 +1,7 @@
 import React from 'react';
-import { Truck, Bell, Moon, Sun, LogOut } from 'lucide-react';
+import { Truck, Bell, Moon, Sun, Shield, User, Download, Smartphone } from 'lucide-react';
 
-export default function Header({ title, isDarkMode, setIsDarkMode, onLogout }) {
+export default function Header({ title, isDarkMode, setIsDarkMode, onLogout, user, isAdmin, onInstallApp, isInstalled }) {
   return (
     <header className="app-header">
       <div className="header-left">
@@ -14,6 +14,24 @@ export default function Header({ title, isDarkMode, setIsDarkMode, onLogout }) {
       </div>
 
       <div className="header-right">
+        {/* Download App Button (Mobile / Web) */}
+        {!isInstalled && onInstallApp && (
+          <button
+            className="header-download-btn"
+            onClick={onInstallApp}
+            title="Download & Install Mobile App"
+          >
+            <Download size={14} className="download-icon" />
+            <span className="download-text">App</span>
+          </button>
+        )}
+
+        {/* Role Pill Indicator */}
+        <div className={`header-role-pill ${isAdmin ? 'admin-pill' : 'normal-pill'}`} title={`Logged in as ${user?.role || 'User'}`}>
+          {isAdmin ? <Shield size={13} className="pill-icon" /> : <User size={13} className="pill-icon" />}
+          <span className="pill-text">{isAdmin ? 'Admin' : (user?.role || 'Normal User')}</span>
+        </div>
+
         {/* Dark / Light Theme Toggle Button */}
         <button
           className="theme-toggle-btn"
@@ -29,8 +47,9 @@ export default function Header({ title, isDarkMode, setIsDarkMode, onLogout }) {
           <Bell size={18} />
           <span className="notification-badge"></span>
         </button>
-
       </div>
     </header>
   );
 }
+
+

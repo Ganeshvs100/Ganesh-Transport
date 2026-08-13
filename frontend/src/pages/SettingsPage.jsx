@@ -12,10 +12,13 @@ import {
   Shield,
   Save,
   LogOut,
-  CheckCircle2
+  CheckCircle2,
+  Smartphone,
+  Download,
+  CheckCircle
 } from 'lucide-react';
 
-export default function SettingsPage({ user, onUpdateProfile, isDarkMode, setIsDarkMode, onLogout }) {
+export default function SettingsPage({ user, onUpdateProfile, isDarkMode, setIsDarkMode, onLogout, onInstallApp, isInstalled }) {
   const [name, setName] = useState(user?.name || 'Ganesh Shinde');
   const [email, setEmail] = useState(user?.email || 'admin@ganeshtransport.com');
   const [phone, setPhone] = useState('+91 98765 43210');
@@ -34,7 +37,7 @@ export default function SettingsPage({ user, onUpdateProfile, isDarkMode, setIsD
   // Status message
   const [savedMsg, setSavedMsg] = useState('');
 
-  const isAdmin = user?.role === 'Fleet Manager' || user?.role?.includes('Manager') || user?.role === 'Owner' || user?.role === 'Co-Owner' || user?.email === 'admin@ganeshtransport.com';
+  const isAdmin = user?.role === 'Admin' || user?.role?.toLowerCase() === 'admin' || user?.username === 'admin' || user?.email === 'admin@ganeshtransport.com';
 
   const handleProfileSave = (e) => {
     e.preventDefault();
@@ -67,13 +70,26 @@ export default function SettingsPage({ user, onUpdateProfile, isDarkMode, setIsD
       )}
 
       {/* User Header Profile Card */}
-      <div className="profile-header-card">
-        <div className="profile-avatar-circle">
-          <User size={28} />
+      <div className={`profile-header-card ${isAdmin ? 'admin-profile-card' : ''}`}>
+        <div className={`profile-avatar-circle ${isAdmin ? 'admin-avatar' : ''}`}>
+          {isAdmin ? <Shield size={28} /> : <User size={28} />}
         </div>
         <div className="profile-header-info">
-          <h2 className="profile-name">{name}</h2>
-          <p className="profile-role">Fleet Manager & Owner</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <h2 className="profile-name">{name}</h2>
+            {isAdmin ? (
+              <span className="profile-role-pill admin-badge">
+                <Shield size={11} /> Administrator
+              </span>
+            ) : (
+              <span className="profile-role-pill normal-badge">
+                <User size={11} /> {user?.role || 'Standard User'}
+              </span>
+            )}
+          </div>
+          <p className="profile-role">
+            Account Role: <strong style={{ color: isAdmin ? '#2563eb' : '#475569' }}>{user?.role || 'Normal User'}</strong>
+          </p>
           <span className="profile-badge">{company}</span>
         </div>
       </div>
@@ -257,7 +273,37 @@ export default function SettingsPage({ user, onUpdateProfile, isDarkMode, setIsD
         </div>
       </div>
 
+      {/* Mobile App Download & Install Section */}
+      <div className="settings-section-card pwa-settings-card">
+        <div className="settings-card-title">
+          <Smartphone size={18} className="icon-blue" />
+          <span>Mobile Application</span>
+        </div>
 
+        <div className="pwa-install-promo">
+          <div className="pwa-promo-info">
+            <h4>Ganesh Transport for Mobile</h4>
+            <p>
+              Install this app directly on your Android or iPhone for ultra-fast startup, instant push alerts, and full offline trip logging.
+            </p>
+            <div className="pwa-badges-row">
+              <span className="pwa-status-pill">
+                {isInstalled ? <CheckCircle size={12} className="text-green-500" /> : <Download size={12} />}
+                {isInstalled ? 'App Installed on this device' : 'Available for Android & iOS'}
+              </span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className="pwa-install-action-btn"
+            onClick={onInstallApp}
+          >
+            <Download size={16} />
+            <span>{isInstalled ? 'App Installed' : 'Download / Install App'}</span>
+          </button>
+        </div>
+      </div>
 
       {/* Logout Action Button */}
       <div className="logout-section-card">
