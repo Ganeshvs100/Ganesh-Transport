@@ -7,7 +7,8 @@ import {
   Clock,
   ChevronRight,
   Plus,
-  Trash2
+  Trash2,
+  Truck
 } from 'lucide-react';
 import { fetchVehicles, deleteVehicle } from '../api';
 

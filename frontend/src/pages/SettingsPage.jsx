@@ -306,7 +306,7 @@ export default function SettingsPage({ user, onUpdateProfile, isDarkMode, setIsD
       </div>
 
       {/* Logout Action Button */}
-      <div className="logout-section-card">
+      <div className="logout-section-card" style={{ marginBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}>
         <button className="full-logout-btn" onClick={onLogout}>
           <LogOut size={18} /> Sign Out of Ganesh Transport
         </button>

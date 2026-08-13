@@ -10,7 +10,6 @@ export default function Header({
   isAdmin,
   onInstallApp,
   isInstalled,
-  onOpenAddModal,
   onOpenNotifications,
   notifCount = 0,
 }) {
@@ -26,18 +25,6 @@ export default function Header({
       </div>
 
       <div className="header-right">
-        {/* Quick Add Entry Button */}
-        {onOpenAddModal && (
-          <button
-            className="header-quick-add-btn"
-            onClick={onOpenAddModal}
-            title="Add Vehicle, Trip, or Transaction"
-          >
-            <Plus size={14} />
-            <span className="add-btn-text">Add</span>
-          </button>
-        )}
-
         {/* Download App Button */}
         {!isInstalled && onInstallApp && (
           <button

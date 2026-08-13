@@ -178,7 +178,6 @@ export default function App() {
               isAdmin={isAdmin}
               onInstallApp={installApp}
               isInstalled={isInstalled}
-              onOpenAddModal={() => setIsAddModalOpen(true)}
               onOpenNotifications={() => setIsNotifPanelOpen(true)}
               notifCount={unreadCount}
             />
