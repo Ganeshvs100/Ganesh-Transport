@@ -60,7 +60,9 @@ export default function VehiclesPage({ onOpenAddModal }) {
           <span className="overview-title">TOTAL FLEET</span>
           <div className="overview-number-row">
             <span className="overview-number">{overview.totalFleet}</span>
-            <span className="overview-tag blue-tag">+2% vs last mo.</span>
+            <span className="overview-tag blue-tag">
+              {overview.totalFleet === 1 ? '1 Vehicle' : `${overview.totalFleet} Vehicles`}
+            </span>
           </div>
         </div>
 
@@ -70,7 +72,9 @@ export default function VehiclesPage({ onOpenAddModal }) {
             <span className="overview-number critical-text">
               {overview.criticalExpiry < 10 ? `0${overview.criticalExpiry}` : overview.criticalExpiry}
             </span>
-            <span className="overview-tag red-tag">Immediate Action</span>
+            <span className={`overview-tag ${overview.criticalExpiry > 0 ? 'red-tag' : 'blue-tag'}`}>
+              {overview.criticalExpiry > 0 ? 'Action Required' : 'All Valid'}
+            </span>
           </div>
         </div>
       </div>

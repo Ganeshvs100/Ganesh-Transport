@@ -1,5 +1,5 @@
 import React from 'react';
-import { Truck, Bell, Moon, Sun, Shield, User, Download, Plus } from 'lucide-react';
+import { Truck, Bell, Moon, Sun, Shield, User, Download, LogOut } from 'lucide-react';
 
 export default function Header({
   title,
@@ -72,6 +72,17 @@ export default function Header({
             </span>
           )}
         </button>
+
+        {/* Quick Header Logout Button */}
+        {onLogout && (
+          <button
+            className="icon-btn header-logout-icon-btn"
+            onClick={onLogout}
+            title="Log Out"
+          >
+            <LogOut size={16} />
+          </button>
+        )}
       </div>
     </header>
   );

@@ -275,15 +275,15 @@ app.get('/api/vehicles', async (req, res) => {
       order: [['createdAt', 'DESC']]
     });
 
-    const totalFleet = 119 + (await Vehicle.count());
-    const criticalExpiry = 6 + (await Vehicle.count({
+    const totalFleet = await Vehicle.count();
+    const criticalExpiry = await Vehicle.count({
       where: {
         [Op.or]: [
           { isInsuranceAlert: true },
           { isFitnessAlert: true }
         ]
       }
-    }));
+    });
 
     res.json({
       vehicles,
