@@ -3134,7 +3134,7 @@
 }
 
 .user-control-row:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
   transform: translateY(-1px);
 }
 
@@ -3143,9 +3143,123 @@
   border-color: #334155 !important;
 }
 
-.filter-role-select:focus {
+/* Modern Filter & Search Controls for Admin */
+.admin-toolbar-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--card-bg, #ffffff);
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.admin-toolbar-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.admin-status-tabs {
+  display: inline-flex;
+  background: var(--gray-bg, #f1f5f9);
+  padding: 4px;
+  border-radius: 10px;
+  gap: 4px;
+  border: 1px solid var(--border-color, #e2e8f0);
+}
+
+.admin-status-tab {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted, #64748b);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-status-tab:hover {
+  color: var(--text-main, #0f172a);
+}
+
+.admin-status-tab.active {
+  background: var(--card-bg, #ffffff);
+  color: #1e40af;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.admin-search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 220px;
+  max-width: 380px;
+}
+
+.admin-search-input {
+  width: 100%;
+  height: 38px;
+  padding: 0 12px 0 36px !important;
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--border-color, #cbd5e1);
+  border-radius: 10px;
+  font-size: 0.82rem;
+  color: var(--text-main, #0f172a);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-search-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.admin-role-select {
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color, #cbd5e1);
+  background: var(--card-bg, #ffffff);
+  color: var(--text-main, #0f172a);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.admin-role-select:focus {
   outline: none;
   border-color: #2563eb;
 }
+
+.dark-theme .admin-toolbar-container {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+.dark-theme .admin-status-tabs {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.dark-theme .admin-status-tab.active {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.dark-theme .admin-search-input,
+.dark-theme .admin-role-select {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f8fafc;
+}
+
 
 

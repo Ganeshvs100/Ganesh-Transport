@@ -52,7 +52,7 @@ app.post('/api/auth/login', async (req, res) => {
 
 app.post('/api/auth/register', async (req, res) => {
   try {
-    const { username, email, password, name, role } = req.body;
+    const { username, email, password, name, role, phone, location } = req.body;
     if (!email || !password || !name) {
       return res.status(400).json({ success: false, message: 'Full name, email and password are required' });
     }
@@ -76,6 +76,8 @@ app.post('/api/auth/register', async (req, res) => {
       password,
       name,
       role: role || 'Dispatcher',
+      phone: phone || '',
+      location: location || '',
       isApproved: false
     });
 
@@ -149,7 +151,7 @@ app.get('/api/admin/users', async (req, res) => {
 // Admin Direct Create User
 app.post('/api/admin/users', async (req, res) => {
   try {
-    const { name, email, username, password, role, isApproved } = req.body;
+    const { name, email, username, password, role, phone, location, isApproved } = req.body;
     if (!name || !email || !password) {
       return res.status(400).json({ success: false, message: 'Name, email and password are required' });
     }
@@ -172,6 +174,8 @@ app.post('/api/admin/users', async (req, res) => {
       password,
       name,
       role: role || 'Dispatcher',
+      phone: phone || '',
+      location: location || '',
       isApproved: isApproved !== undefined ? isApproved : true
     });
 
@@ -230,6 +234,30 @@ app.patch('/api/admin/users/:id/status', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Failed to update user status' });
+  }
+});
+
+// Admin Update User Details (Role, Name, Phone, Location)
+app.patch('/api/admin/users/:id', async (req, res) => {
+  try {
+    const { name, role, phone, location } = req.body;
+    const user = await User.findByPk(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    if (name) user.name = name;
+    if (role && user.username !== 'admin') user.role = role;
+    if (phone !== undefined) user.phone = phone;
+    if (location !== undefined) user.location = location;
+
+    await user.save();
+    const userJson = user.toJSON();
+    const { password: _, ...userWithoutPass } = userJson;
+
+    res.json({ success: true, message: `User ${user.name} details updated`, user: userWithoutPass });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to update user details' });
   }
 });
 

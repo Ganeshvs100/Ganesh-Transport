@@ -18,7 +18,10 @@ import {
   ToggleLeft,
   ToggleRight,
   Eye,
-  EyeOff
+  EyeOff,
+  Phone,
+  MapPin,
+  Edit3
 } from 'lucide-react';
 import {
   fetchPendingUsers,
@@ -29,7 +32,8 @@ import {
   updateUserRole,
   adminCreateUser,
   adminResetPassword,
-  adminToggleUserStatus
+  adminToggleUserStatus,
+  adminUpdateUser
 } from '../api';
 
 const AVAILABLE_ROLES = [
@@ -54,16 +58,27 @@ export default function AdminPage({ currentUser }) {
   // Modal States
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isResetPasswordModalOpen, setIsResetPasswordModalOpen] = useState(false);
+  const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
   const [selectedUserForPassword, setSelectedUserForPassword] = useState(null);
+  const [selectedUserForEdit, setSelectedUserForEdit] = useState(null);
 
   // Form States for Add User
   const [newUserName, setNewUserName] = useState('');
   const [newUserEmail, setNewUserEmail] = useState('');
   const [newUserUsername, setNewUserUsername] = useState('');
+  const [newUserPhone, setNewUserPhone] = useState('');
+  const [newUserLocation, setNewUserLocation] = useState('');
   const [newUserPassword, setNewUserPassword] = useState('');
   const [newUserRole, setNewUserRole] = useState('Dispatcher');
   const [showAddPassword, setShowAddPassword] = useState(false);
   const [isSubmittingAdd, setIsSubmittingAdd] = useState(false);
+
+  // Form States for Edit User
+  const [editName, setEditName] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [editLocation, setEditLocation] = useState('');
+  const [editRole, setEditRole] = useState('Dispatcher');
+  const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
 
   // Form States for Password Reset
   const [newResetPassword, setNewResetPassword] = useState('');
@@ -207,6 +222,8 @@ export default function AdminPage({ currentUser }) {
         email: newUserEmail.trim(),
         username: newUserUsername.trim() || newUserEmail.trim(),
         password: newUserPassword,
+        phone: newUserPhone.trim(),
+        location: newUserLocation.trim(),
         role: newUserRole,
         isApproved: true
       };
@@ -218,6 +235,8 @@ export default function AdminPage({ currentUser }) {
         setNewUserName('');
         setNewUserEmail('');
         setNewUserUsername('');
+        setNewUserPhone('');
+        setNewUserLocation('');
         setNewUserPassword('');
         setNewUserRole('Dispatcher');
         loadData();
@@ -228,6 +247,44 @@ export default function AdminPage({ currentUser }) {
       showError('Error creating user.');
     } finally {
       setIsSubmittingAdd(false);
+    }
+  };
+
+  // Edit User Details
+  const handleOpenEditModal = (u) => {
+    setSelectedUserForEdit(u);
+    setEditName(u.name || '');
+    setEditPhone(u.phone || '');
+    setEditLocation(u.location || '');
+    setEditRole(u.role || 'Dispatcher');
+    setIsEditUserModalOpen(true);
+  };
+
+  const handleEditUserSubmit = async (e) => {
+    e.preventDefault();
+    if (!selectedUserForEdit) return;
+
+    setIsSubmittingEdit(true);
+    try {
+      const res = await adminUpdateUser(selectedUserForEdit.id, {
+        name: editName.trim(),
+        phone: editPhone.trim(),
+        location: editLocation.trim(),
+        role: editRole
+      });
+
+      if (res && res.success) {
+        setAllUsers(prev => prev.map(u => u.id === selectedUserForEdit.id ? { ...u, ...res.user } : u));
+        showSuccess(res.message || 'User details updated!');
+        setIsEditUserModalOpen(false);
+        setSelectedUserForEdit(null);
+      } else {
+        showError(res?.message || 'Failed to update user details.');
+      }
+    } catch (err) {
+      showError('Error updating user.');
+    } finally {
+      setIsSubmittingEdit(false);
     }
   };
 
@@ -269,13 +326,15 @@ export default function AdminPage({ currentUser }) {
       return false;
     }
 
-    // Search query
+    // Search query across name, username, email, role, phone, location
     const s = search.toLowerCase();
     return (
       (u.name && u.name.toLowerCase().includes(s)) ||
       (u.username && u.username.toLowerCase().includes(s)) ||
       (u.email && u.email.toLowerCase().includes(s)) ||
-      (u.role && u.role.toLowerCase().includes(s))
+      (u.role && u.role.toLowerCase().includes(s)) ||
+      (u.phone && u.phone.toLowerCase().includes(s)) ||
+      (u.location && u.location.toLowerCase().includes(s))
     );
   });
 
@@ -291,7 +350,7 @@ export default function AdminPage({ currentUser }) {
         <div>
           <h1 className="page-heading" style={{ margin: 0 }}>Manage Users</h1>
           <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-            Create accounts, manage roles, approve registrations, and control user access.
+            Create accounts, manage roles, phone numbers, branch locations & permissions.
           </p>
         </div>
 
@@ -371,64 +430,57 @@ export default function AdminPage({ currentUser }) {
         </div>
       </div>
 
-      {/* Filters and Navigation tabs */}
-      <div className="fleet-filters-container">
-        <div className="filter-tabs-wrapper">
-          <button
-            className={`filter-tab-btn ${activeTab === 'all' && roleFilter === 'All' ? 'active' : ''}`}
-            onClick={() => { setActiveTab('all'); setRoleFilter('All'); setSearch(''); }}
-          >
-            All Users ({totalUsersCount})
-          </button>
-          <button
-            className={`filter-tab-btn ${activeTab === 'pending' ? 'active' : ''}`}
-            onClick={() => { setActiveTab('pending'); setRoleFilter('All'); setSearch(''); }}
-          >
-            Pending Approvals ({pendingApprovalsCount})
-          </button>
-          <button
-            className={`filter-tab-btn ${activeTab === 'approved' ? 'active' : ''}`}
-            onClick={() => { setActiveTab('approved'); setRoleFilter('All'); setSearch(''); }}
-          >
-            Approved ({approvedUsersCount})
-          </button>
-        </div>
+      {/* Modern Filter & Search Toolbar */}
+      <div className="admin-toolbar-container">
+        <div className="admin-toolbar-row">
+          {/* Segmented Status Tabs */}
+          <div className="admin-status-tabs">
+            <button
+              className={`admin-status-tab ${activeTab === 'all' && roleFilter === 'All' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('all'); setRoleFilter('All'); setSearch(''); }}
+            >
+              All ({totalUsersCount})
+            </button>
+            <button
+              className={`admin-status-tab ${activeTab === 'pending' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('pending'); setRoleFilter('All'); setSearch(''); }}
+            >
+              Pending ({pendingApprovalsCount})
+            </button>
+            <button
+              className={`admin-status-tab ${activeTab === 'approved' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('approved'); setRoleFilter('All'); setSearch(''); }}
+            >
+              Approved ({approvedUsersCount})
+            </button>
+          </div>
 
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-          {/* Role Filter Dropdown */}
-          <select
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
-            className="filter-role-select"
-            style={{
-              padding: '7px 12px',
-              borderRadius: '8px',
-              border: '1px solid var(--border-color)',
-              background: 'var(--card-bg)',
-              color: 'var(--text-main)',
-              fontSize: '0.78rem',
-              fontWeight: '600'
-            }}
-          >
-            <option value="All">All Roles</option>
-            <option value="Admin">Admin</option>
-            <option value="Owner">Owner</option>
-            <option value="Co-Owner">Co-Owner</option>
-            <option value="Fleet Manager">Fleet Manager</option>
-            <option value="Dispatcher">Dispatcher</option>
-            <option value="Driver">Driver</option>
-          </select>
+          {/* Right Controls: Role Dropdown + Search Box */}
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', flex: 1, justifyContent: 'flex-end' }}>
+            <select
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+              className="admin-role-select"
+            >
+              <option value="All">All Roles</option>
+              <option value="Admin">Admin</option>
+              <option value="Owner">Owner</option>
+              <option value="Co-Owner">Co-Owner</option>
+              <option value="Fleet Manager">Fleet Manager</option>
+              <option value="Dispatcher">Dispatcher</option>
+              <option value="Driver">Driver</option>
+            </select>
 
-          {/* Search Bar */}
-          <div className="search-bar-wrapper">
-            <Search size={16} className="search-icon" />
-            <input
-              type="text"
-              placeholder="Search by name, email, username..."
-              className="search-input"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+            <div className="admin-search-wrapper">
+              <Search size={16} className="search-icon" />
+              <input
+                type="text"
+                placeholder="Search name, phone, location..."
+                className="admin-search-input"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -479,7 +531,7 @@ export default function AdminPage({ currentUser }) {
                   className="user-control-row"
                 >
                   {/* Left Column: Avatar & Meta */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: '240px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: '260px' }}>
                     <div
                       style={{
                         width: '44px',
@@ -511,18 +563,31 @@ export default function AdminPage({ currentUser }) {
                         )}
                       </div>
 
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                          {u.email}
+                      {/* Contact & Location details */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                          <Mail size={12} /> {u.email}
                         </span>
-                        <span style={{ color: 'var(--border-color)' }}>•</span>
+
+                        {u.phone && (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', color: 'var(--text-main)' }}>
+                            <Phone size={12} style={{ color: '#2563eb' }} /> {u.phone}
+                          </span>
+                        )}
+
+                        {u.location && (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', color: '#047857' }}>
+                            <MapPin size={12} /> {u.location}
+                          </span>
+                        )}
+
                         {u.isApproved ? (
                           <span style={{ fontSize: '0.68rem', background: '#d1fae5', color: '#065f46', padding: '2px 8px', borderRadius: '12px', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                            <Check size={11} /> Approved & Active
+                            <Check size={11} /> Approved
                           </span>
                         ) : (
                           <span style={{ fontSize: '0.68rem', background: '#fef3c7', color: '#92400e', padding: '2px 8px', borderRadius: '12px', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                            <X size={11} /> Pending Approval
+                            <X size={11} /> Pending
                           </span>
                         )}
                       </div>
@@ -557,6 +622,28 @@ export default function AdminPage({ currentUser }) {
 
                   {/* Right Column: Actions */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    {/* Edit Details Button */}
+                    <button
+                      onClick={() => handleOpenEditModal(u)}
+                      style={{
+                        background: 'var(--gray-bg, #f1f5f9)',
+                        color: 'var(--text-main, #334155)',
+                        border: '1px solid var(--border-color, #cbd5e1)',
+                        borderRadius: '8px',
+                        padding: '6px 10px',
+                        cursor: 'pointer',
+                        fontSize: '0.75rem',
+                        fontWeight: '600',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                      title="Edit User Details (Phone, Location, Name)"
+                    >
+                      <Edit3 size={14} />
+                      <span>Edit</span>
+                    </button>
+
                     {/* Toggle Status / Approve */}
                     {!u.isApproved ? (
                       <>
@@ -682,7 +769,7 @@ export default function AdminPage({ currentUser }) {
       {/* ========================================================================= */}
       {isAddModalOpen && (
         <div className="modal-overlay">
-          <div className="modal-content" style={{ maxWidth: '480px' }}>
+          <div className="modal-content" style={{ maxWidth: '500px' }}>
             <div className="modal-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <div style={{ padding: '8px', background: '#dbeafe', borderRadius: '8px', color: '#1d4ed8' }}>
@@ -729,6 +816,34 @@ export default function AdminPage({ currentUser }) {
                     value={newUserEmail}
                     onChange={(e) => setNewUserEmail(e.target.value)}
                   />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div className="input-group">
+                  <label>Mobile Number</label>
+                  <div className="input-field-wrapper">
+                    <Phone size={16} className="input-icon" />
+                    <input
+                      type="tel"
+                      placeholder="+91 98765 43210"
+                      value={newUserPhone}
+                      onChange={(e) => setNewUserPhone(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="input-group">
+                  <label>Location / Branch</label>
+                  <div className="input-field-wrapper">
+                    <MapPin size={16} className="input-icon" />
+                    <input
+                      type="text"
+                      placeholder="e.g. Navi Mumbai Hub"
+                      value={newUserLocation}
+                      onChange={(e) => setNewUserLocation(e.target.value)}
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -812,7 +927,119 @@ export default function AdminPage({ currentUser }) {
       )}
 
       {/* ========================================================================= */}
-      {/* 2. RESET PASSWORD MODAL */}
+      {/* 2. EDIT USER DETAILS MODAL */}
+      {/* ========================================================================= */}
+      {isEditUserModalOpen && selectedUserForEdit && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: '480px' }}>
+            <div className="modal-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ padding: '8px', background: '#dbeafe', borderRadius: '8px', color: '#1d4ed8' }}>
+                  <Edit3 size={20} />
+                </div>
+                <div>
+                  <h2 style={{ fontSize: '1.1rem', margin: 0, fontWeight: '700' }}>Edit User Details</h2>
+                  <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                    For {selectedUserForEdit.email}
+                  </p>
+                </div>
+              </div>
+              <button
+                className="modal-close-btn"
+                onClick={() => setIsEditUserModalOpen(false)}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleEditUserSubmit} className="modal-form" style={{ marginTop: '15px' }}>
+              <div className="input-group">
+                <label>Full Name</label>
+                <div className="input-field-wrapper">
+                  <User size={16} className="input-icon" />
+                  <input
+                    type="text"
+                    required
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="input-group">
+                <label>Mobile Number</label>
+                <div className="input-field-wrapper">
+                  <Phone size={16} className="input-icon" />
+                  <input
+                    type="tel"
+                    placeholder="+91 98765 43210"
+                    value={editPhone}
+                    onChange={(e) => setEditPhone(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="input-group">
+                <label>Operating Location / Branch</label>
+                <div className="input-field-wrapper">
+                  <MapPin size={16} className="input-icon" />
+                  <input
+                    type="text"
+                    placeholder="e.g. Navi Mumbai / Pune Hub"
+                    value={editLocation}
+                    onChange={(e) => setEditLocation(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="input-group">
+                <label>Assigned Role</label>
+                <select
+                  value={editRole}
+                  disabled={selectedUserForEdit.username === 'admin'}
+                  onChange={(e) => setEditRole(e.target.value)}
+                  className="modal-select-input"
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-color)',
+                    background: 'var(--card-bg)',
+                    color: 'var(--text-main)',
+                    fontSize: '0.85rem'
+                  }}
+                >
+                  {AVAILABLE_ROLES.map((role) => (
+                    <option key={role.value} value={role.value}>
+                      {role.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="modal-actions" style={{ marginTop: '20px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  className="modal-cancel-btn"
+                  onClick={() => setIsEditUserModalOpen(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="modal-submit-btn"
+                  disabled={isSubmittingEdit}
+                >
+                  {isSubmittingEdit ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 3. RESET PASSWORD MODAL */}
       {/* ========================================================================= */}
       {isResetPasswordModalOpen && selectedUserForPassword && (
         <div className="modal-overlay">
@@ -883,4 +1110,5 @@ export default function AdminPage({ currentUser }) {
     </div>
   );
 }
+
 

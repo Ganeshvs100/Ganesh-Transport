@@ -250,6 +250,19 @@ export async function adminResetPassword(userId, password) {
   }
 }
 
+export async function adminUpdateUser(userId, userData) {
+  try {
+    const res = await fetch(`${API_BASE}/admin/users/${userId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(userData)
+    });
+    return await res.json();
+  } catch (err) {
+    return { success: false, message: err.message };
+  }
+}
+
 export async function adminToggleUserStatus(userId, isApproved) {
   try {
     const res = await fetch(`${API_BASE}/admin/users/${userId}/status`, {
@@ -262,5 +275,6 @@ export async function adminToggleUserStatus(userId, isApproved) {
     return { success: false, message: err.message };
   }
 }
+
 
 

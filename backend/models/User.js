@@ -32,6 +32,16 @@ export default function defineUser(sequelize) {
       type: DataTypes.STRING,
       allowNull: true,
     },
+    phone: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: '',
+    },
+    location: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: '',
+    },
     isApproved: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,

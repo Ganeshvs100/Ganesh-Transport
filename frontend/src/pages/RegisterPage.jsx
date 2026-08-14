@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Truck, User, Lock, Mail, Eye, EyeOff, ArrowLeft, Briefcase, Building2, Shield, Navigation } from 'lucide-react';
+import { Truck, User, Lock, Mail, Eye, EyeOff, ArrowLeft, Briefcase, Building2, Shield, Navigation, Phone, MapPin } from 'lucide-react';
 import { registerUser } from '../api';
 
 export default function RegisterPage({ onRegisterSuccess, onBackToLogin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [location, setLocation] = useState('');
   const [role, setRole] = useState('Owner');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -20,7 +22,15 @@ export default function RegisterPage({ onRegisterSuccess, onBackToLogin }) {
 
     try {
       // Use email as username for backend compatibility
-      const res = await registerUser({ username: email, email, password, name, role });
+      const res = await registerUser({
+        username: email,
+        email,
+        password,
+        name,
+        role,
+        phone,
+        location
+      });
       if (res.success) {
         setSuccessMsg(res.message || 'Registration request submitted! Please wait for admin approval.');
         setTimeout(() => {
@@ -143,6 +153,34 @@ export default function RegisterPage({ onRegisterSuccess, onBackToLogin }) {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                  />
+                </div>
+              </div>
+
+              {/* Mobile Number */}
+              <div className="login-field">
+                <label>Mobile Number</label>
+                <div className="input-with-icon">
+                  <Phone size={16} className="field-icon" />
+                  <input
+                    type="tel"
+                    placeholder="+91 98765 43210"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Operating Location */}
+              <div className="login-field">
+                <label>Operating Location / Branch</label>
+                <div className="input-with-icon">
+                  <MapPin size={16} className="field-icon" />
+                  <input
+                    type="text"
+                    placeholder="e.g. Navi Mumbai / Pune Hub"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
                   />
                 </div>
               </div>
