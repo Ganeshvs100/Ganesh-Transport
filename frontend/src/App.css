@@ -3108,3 +3108,44 @@
   text-align: center;
 }
 
+/* =========================================================================
+   Admin Manage Users Enhancements
+========================================================================= */
+.spin-animation {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.active-overview-card {
+  outline: 2px solid #2563eb !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15) !important;
+}
+
+.user-control-row {
+  transition: all 0.2s ease;
+}
+
+.user-control-row:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+}
+
+.dark-theme .user-control-row {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+.filter-role-select:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+

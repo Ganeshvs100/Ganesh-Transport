@@ -146,6 +146,93 @@ app.get('/api/admin/users', async (req, res) => {
   }
 });
 
+// Admin Direct Create User
+app.post('/api/admin/users', async (req, res) => {
+  try {
+    const { name, email, username, password, role, isApproved } = req.body;
+    if (!name || !email || !password) {
+      return res.status(400).json({ success: false, message: 'Name, email and password are required' });
+    }
+    const effectiveUsername = username || email;
+
+    const existingUser = await User.findOne({
+      where: {
+        [Op.or]: [{ username: effectiveUsername }, { email }]
+      }
+    });
+
+    if (existingUser) {
+      return res.status(400).json({ success: false, message: 'A user with this username or email already exists' });
+    }
+
+    const newUser = await User.create({
+      id: `usr-${Date.now()}`,
+      username: effectiveUsername,
+      email,
+      password,
+      name,
+      role: role || 'Dispatcher',
+      isApproved: isApproved !== undefined ? isApproved : true
+    });
+
+    const userJson = newUser.toJSON();
+    const { password: _, ...createdWithoutPass } = userJson;
+
+    res.status(201).json({
+      success: true,
+      message: `User ${name} created successfully!`,
+      user: createdWithoutPass
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to create user' });
+  }
+});
+
+// Admin Reset Password
+app.patch('/api/admin/users/:id/password', async (req, res) => {
+  try {
+    const { password } = req.body;
+    if (!password || password.trim().length < 4) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 4 characters long' });
+    }
+    const user = await User.findByPk(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    user.password = password;
+    await user.save();
+    res.json({ success: true, message: `Password updated for ${user.name}` });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to reset password' });
+  }
+});
+
+// Admin Toggle User Approval / Status
+app.patch('/api/admin/users/:id/status', async (req, res) => {
+  try {
+    const { isApproved } = req.body;
+    const user = await User.findByPk(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    if (user.username === 'admin' && !isApproved) {
+      return res.status(400).json({ success: false, message: 'Cannot deactivate default admin account' });
+    }
+    user.isApproved = isApproved;
+    await user.save();
+    res.json({
+      success: true,
+      message: `Account for ${user.name} is now ${isApproved ? 'Approved & Active' : 'Suspended/Pending'}`,
+      user
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to update user status' });
+  }
+});
+
 app.delete('/api/admin/users/:id', async (req, res) => {
   try {
     const user = await User.findByPk(req.params.id);
